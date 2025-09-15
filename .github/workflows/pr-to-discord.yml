@@ -32,13 +32,11 @@ jobs:
           if [ -z "$API_RESPONSE" ]; then
             REVIEWERS="[]"
           else
-            # 안정적으로 리뷰어 목록 파싱 (null 및 빈 배열 모두 처리)
             REVIEWERS=$(echo "$API_RESPONSE" | jq -c '[.requested_reviewers?[]?.login] // []')
           fi
 
           echo "Reviewers JSON: $REVIEWERS"
 
-          # base64 인코딩하여 GitHub Actions output으로 전달
           REVIEWERS_B64=$(echo "$REVIEWERS" | base64)
           echo "reviewers_b64=$REVIEWERS_B64" >> "$GITHUB_OUTPUT"
 
@@ -53,7 +51,6 @@ jobs:
           PR_TITLE="${{ github.event.pull_request.title }}"
           PR_URL="${{ github.event.pull_request.html_url }}"
 
-          # base64 디코딩 후 JSON 배열로 파싱
           REVIEWERS_JSON=$(echo "${{ steps.reviewers.outputs.reviewers_b64 }}" | base64 --decode)
           echo "Parsed reviewers: $REVIEWERS_JSON"
 
@@ -101,13 +98,16 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          BODY="${{ github.event.pull_request.body }}"
 
+          # gh CLI 로그인
+          echo "$GH_TOKEN" | gh auth login --with-token
+
+          BODY="${{ github.event.pull_request.body }}"
           echo "PR body:"
           echo "$BODY"
 
-          # PR 본문에서 Closes #숫자 패턴 추출
-          for issue in $(echo "$BODY" | grep -oE '(close[sd]?|fix(e[sd])?|resolve[sd]?) #[0-9]+' | awk '{print $2}' | tr -d '#'); do
+          # Closes/Fixes/Resolves 패턴 (대소문자 무시)
+          for issue in $(echo "$BODY" | grep -ioE '(close[sd]?|fix(e[sd])?|resolve[sd]?) #[0-9]+' | awk '{print $2}' | tr -d '#'); do
             echo "Closing issue #$issue"
             gh issue close "$issue" -R ${{ github.repository }}
           done
