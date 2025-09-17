@@ -77,7 +77,7 @@ model StoreLike {
 
 model Product {
   id                String    @id @default(cuid())
-  storeId           String
+  storeId           String?
   name              String    @db.VarChar(255)
   price             Decimal   @db.Decimal(18, 2)
   content           String?
@@ -89,7 +89,7 @@ model Product {
   updatedAt         DateTime  @updatedAt
   isSoldOut         Boolean   @default(false)
 
-  store    Store      @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  store    Store?      @relation(fields: [storeId], references: [id], onDelete: Cascade)
   CartItem CartItem[]
   Review   Review[]
   Stock    Stock[]
