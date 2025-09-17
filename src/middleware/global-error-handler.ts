@@ -1,7 +1,7 @@
 import { ErrorRequestHandler, NextFunction, Request, Response } from 'express';
-import { isErrorInstanceOfHttp, isErrorInstanceOfNode } from '../utils/error-util';
+import { isErrorInstanceOfHttp, isErrorInstanceOfNode } from '../../src/common/utils/error-util';
 
-import { getIp, getMethod, getUrl } from '../utils/from-util';
+import { getIp, getMethod, getUrl } from '../../src/common/utils/from-util';
 
 export const globalErrorHandler: ErrorRequestHandler = async (
   error: unknown,
