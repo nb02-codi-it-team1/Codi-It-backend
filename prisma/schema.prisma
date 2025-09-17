@@ -13,3 +13,262 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id        String   @id @default(cuid())
+  gradeid   String
+  name      String   @db.VarChar(20)
+  email     String   @db.VarChar(100)
+  password  String   @db.VarChar(50)
+  image     String
+  points    Int?
+  type      UserType
+  createAt  DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isDeleted Boolean  @default(false)
+
+  grade        Grade          @relation(fields: [gradeid], references: [id])
+  cart         Cart[]         @relation("UserCart")
+  Review       Review[]
+  Store        Store?
+  StoreLike    StoreLike[]
+  Inquiry      Inquiry[]
+  Notification Notification[]
+}
+
+enum UserType {
+  SELLER
+  BUYER
+}
+
+model Store {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  name               String   @db.VarChar(255)
+  address            String   @db.VarChar(255)
+  detailAddress      String   @db.VarChar(255)
+  phoneNumber        String   @db.VarChar(20)
+  content            String
+  image              String
+  productCount       Int?
+  favoriteCount      Int?
+  monthFavoriteCount Int?
+  totalSoldCount     Int?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  isDeleted          Boolean  @default(false)
+
+  user      User        @relation(fields: [userId], references: [id])
+  StoreLike StoreLike[]
+  Product   Product[]
+}
+
+model StoreLike {
+  id        String   @id @default(cuid())
+  userId    String
+  storeId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id])
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, storeId])
+}
+
+model Product {
+  id                String    @id @default(cuid())
+  storeId           String
+  name              String    @db.VarChar(255)
+  price             Decimal   @db.Decimal(18, 2)
+  content           String?
+  image             String
+  discountRate      Int?
+  discountStartTime DateTime?
+  discountEndTime   DateTime?
+  createAt          DateTime  @default(now())
+  updateAt          DateTime  @updatedAt
+  isSoldOut         Boolean   @default(false)
+
+  store    Store      @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  CartItem CartItem[]
+  Review   Review[]
+  Stock    Stock[]
+  Inquiry  Inquiry[]
+  Category Category?
+
+  @@index([name])
+}
+
+model Stock {
+  id        String @id @default(cuid())
+  productId String
+  sizeId    String
+  quantity  Int
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  size    Size    @relation(fields: [sizeId], references: [id])
+
+  @@unique([productId, sizeId])
+}
+
+model Cart {
+  id       String   @id @default(cuid())
+  buyerId  String
+  quantity Int
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+
+  buyer    User       @relation("UserCart", fields: [buyerId], references: [id])
+  CartItem CartItem[]
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  productId String
+  sizeId    String
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  pruduct Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  size    Size    @relation(fields: [sizeId], references: [id])
+}
+
+model Order {
+  id            String   @id @default(cuid())
+  name          String
+  phoneNumber   String
+  address       String
+  subtotal      Decimal  @db.Decimal(18, 2)
+  totalQuantity Int
+  usePoint      Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  payment   Payment?
+  OrderItem OrderItem[]
+}
+
+model OrderItem {
+  id         String   @id @default(cuid())
+  orderId    String
+  productId  String
+  sizeId     String
+  quantity   Int
+  price      Decimal  @db.Decimal(18, 2)
+  isReviewed Boolean? @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+  id        String        @id @default(cuid())
+  orderId   String        @unique
+  price     Decimal       @db.Decimal(18, 2)
+  status    PaymentStatus
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+enum PaymentStatus {
+  CompletedPayment
+  Cancelled
+  Processing
+  Shipped
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  rating    Int
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model Inquiry {
+  id        String        @id @default(cuid())
+  userId    String
+  productId String
+  title     String        @db.VarChar(255)
+  content   String
+  status    InquiryStatus
+  isSecret  Boolean       @default(false)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id])
+  product      Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  InquiryReply InquiryReply?
+}
+
+enum InquiryStatus {
+  CompletedAnswer
+  WaitingAnswer
+}
+
+model InquiryReply {
+  id        String   @id @default(cuid())
+  inquiryId String   @unique
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  inquiry Inquiry @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  content   String
+  isChecked Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Size {
+  id   String @id @default(cuid())
+  name String
+  ko   String
+  en   String
+
+  CartItem CartItem[]
+  Stock    Stock[]
+}
+
+model Category {
+  id        String @id @default(cuid())
+  productId String @unique
+  name      String
+
+  product Product @relation(fields: [productId], references: [id])
+}
+
+model Grade {
+  id        String  @id @default(cuid())
+  name      String  
+  rate      Decimal @db.Decimal(18, 2)
+  minAmount Int
+
+  User User[]
+}
+
+/* 
+VIP 1,000,000원 이상 구매 
+Black 500,000원 이상 구매 
+Red 300,000원 이상 구매 
+Orange 100,000원 이상 구매 
+Green 신규 회원
+ */
