@@ -3,6 +3,8 @@ import { CreateStoreDto } from './dtos/create.dto';
 import StoreRepository from './stores.repository';
 import { StoreResponseDto } from './dtos/response.dto';
 import { UpdateStoreDto } from './dtos/update.dto';
+import { DetailResponseDto } from './dtos/detail-response.dto';
+import { plainToInstance } from 'class-transformer';
 
 export default class StoreService {
   private readonly storeRepository: StoreRepository;
@@ -23,22 +25,15 @@ export default class StoreService {
         connect: { id: userId },
       },
     });
-    return {
-      id: newStore.id,
-      name: newStore.name,
-      createdAt: newStore.createdAt.toISOString(),
-      updatedAt: newStore.updatedAt.toISOString(),
-      userId: newStore.userId,
-      address: newStore.address,
-      detailAddress: newStore.detailAddress,
-      phoneNumber: newStore.phoneNumber,
-      content: newStore.content,
-      image: newStore.image ?? null,
-    };
+    return plainToInstance(StoreResponseDto, newStore);
   }
 
-  async updateStore(id: string, userId: string, data: UpdateStoreDto): Promise<StoreResponseDto> {
-    const existingStore = await this.storeRepository.findById(id);
+  async updateStore(
+    storeId: string,
+    userId: string,
+    data: UpdateStoreDto
+  ): Promise<StoreResponseDto> {
+    const existingStore = await this.storeRepository.findById(storeId);
     if (!existingStore) {
       throw new NotFoundError('존재하지 않는 스토어입니다.');
     }
@@ -46,18 +41,17 @@ export default class StoreService {
       throw new UnauthorizedError('권한이 없습니다.');
     }
 
-    const updatedStore = await this.storeRepository.updateStore(id, userId, data);
-    return {
-      id: updatedStore.id,
-      name: updatedStore.name,
-      createdAt: updatedStore.createdAt.toISOString(),
-      updatedAt: updatedStore.updatedAt.toISOString(),
-      userId: updatedStore.userId,
-      address: updatedStore.address,
-      detailAddress: updatedStore.detailAddress,
-      phoneNumber: updatedStore.phoneNumber,
-      content: updatedStore.content,
-      image: updatedStore.image ?? null,
-    };
+    const updatedStore = await this.storeRepository.updateStore(storeId, userId, data);
+
+    return plainToInstance(StoreResponseDto, updatedStore);
+  }
+
+  async getStoreById(storeId: string): Promise<DetailResponseDto> {
+    const store = await this.storeRepository.findById(storeId);
+    if (!store) {
+      throw new NotFoundError('존재하지 않는 스토어입니다.');
+    }
+
+    return plainToInstance(DetailResponseDto, store);
   }
 }

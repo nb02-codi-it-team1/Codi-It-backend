@@ -18,15 +18,15 @@ export default class StoreRepository {
       where: { name },
     });
   }
-  async findById(id: string) {
+  async findById(storeId: string) {
     return this.prisma.store.findUnique({
-      where: { id, isDeleted: false },
+      where: { id: storeId, isDeleted: false },
     });
   }
 
-  async updateStore(id: string, userId: string, data: Prisma.StoreUpdateInput) {
+  async updateStore(storeId: string, userId: string, data: Prisma.StoreUpdateInput) {
     return this.prisma.store.update({
-      where: { id, userId },
+      where: { id: storeId, userId },
       data,
     });
   }
