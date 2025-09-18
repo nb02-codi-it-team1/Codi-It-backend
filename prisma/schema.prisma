@@ -18,12 +18,12 @@ model User {
   id        String   @id @default(cuid())
   gradeid   String
   name      String   @db.VarChar(20)
-  email     String   @db.VarChar(100)
-  password  String   @db.VarChar(50)
-  image     String
+  email     String   @unique @db.VarChar(100)
+  password  String   @db.VarChar(255)
+  image     String?
   points    Int?
   type      UserType
-  createAt  DateTime @default(now())
+  createdAt  DateTime @default(now())
   updatedAt DateTime @updatedAt
   isDeleted Boolean  @default(false)
 
@@ -85,8 +85,8 @@ model Product {
   discountRate      Int?
   discountStartTime DateTime?
   discountEndTime   DateTime?
-  createAt          DateTime  @default(now())
-  updateAt          DateTime  @updatedAt
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
   isSoldOut         Boolean   @default(false)
 
   store    Store      @relation(fields: [storeId], references: [id], onDelete: Cascade)
@@ -115,8 +115,8 @@ model Cart {
   id       String   @id @default(cuid())
   buyerId  String
   quantity Int
-  createAt DateTime @default(now())
-  updateAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   buyer    User       @relation("UserCart", fields: [buyerId], references: [id])
   CartItem CartItem[]
@@ -259,7 +259,7 @@ model Category {
 model Grade {
   id        String  @id @default(cuid())
   name      String  
-  rate      Decimal @db.Decimal(18, 2)
+  rate      Int
   minAmount Int
 
   User User[]
