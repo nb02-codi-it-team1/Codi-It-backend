@@ -67,4 +67,23 @@ export default class StoreController {
       return next(error);
     }
   };
+
+  getMyStoreProducts = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const storeId = String(req.params.storeId);
+      const userId = String(req.user?.userId);
+      const page = Number(req.query.page) || 1;
+      const pageSize = Number(req.query.pageSize) || 10;
+
+      const productList = await this.storeService.getMyStoreProducts(
+        storeId,
+        userId,
+        page,
+        pageSize
+      );
+      return res.status(200).json(productList);
+    } catch (error) {
+      return next(error);
+    }
+  };
 }

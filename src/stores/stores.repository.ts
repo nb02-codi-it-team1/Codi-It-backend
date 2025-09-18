@@ -36,4 +36,33 @@ export default class StoreRepository {
       data,
     });
   }
+
+  async findMyStoreProducts(storeId: string, page: number, pageSize: number) {
+    const skip = (page - 1) * pageSize;
+
+    return this.prisma.product.findMany({
+      where: { storeId },
+      skip,
+      take: pageSize,
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async countMyStoreProducts(storeId: string): Promise<number> {
+    return this.prisma.product.count({
+      where: { storeId },
+    });
+  }
+
+  async calculateStock(productId: string): Promise<number> {
+    const result = await this.prisma.stock.aggregate({
+      where: {
+        productId,
+      },
+      _sum: {
+        quantity: true,
+      },
+    });
+    return result._sum.quantity || 0;
+  }
 }

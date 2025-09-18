@@ -6,6 +6,8 @@ import { UpdateStoreDto } from './dtos/update.dto';
 import { DetailResponseDto } from './dtos/detail-response.dto';
 import { plainToInstance } from 'class-transformer';
 import { MyStoreResponseDto } from './dtos/my-store-response.dto';
+import { MyStoreProductResponseDto } from './dtos/my-store-product-response.dto';
+import { ProductResponseDto } from './dtos/product-response.dto';
 
 export default class StoreService {
   private readonly storeRepository: StoreRepository;
@@ -63,5 +65,46 @@ export default class StoreService {
     }
 
     return plainToInstance(MyStoreResponseDto, mystore);
+  }
+
+  async getMyStoreProducts(
+    storeId: string,
+    userId: string,
+    page: number,
+    pageSize: number
+  ): Promise<MyStoreProductResponseDto> {
+    const store = await this.storeRepository.findById(storeId);
+    if (!store) {
+      throw new NotFoundError('존재하지 않는 스토어입니다.');
+    }
+
+    if (store.userId !== userId) {
+      throw new UnauthorizedError('접근 권한이 없습니다.');
+    }
+
+    const products = await this.storeRepository.findMyStoreProducts(storeId, page, pageSize);
+    const totalCount = await this.storeRepository.countMyStoreProducts(storeId);
+
+    const addProductInfo = await Promise.all(
+      products.map(async (product) => {
+        const stock = this.storeRepository.calculateStock(product.id);
+        const isDiscount =
+          (product.discountRate ?? 0) > 0 &&
+          product.discountEndTime !== null &&
+          product.discountEndTime > new Date();
+
+        return {
+          ...product,
+          stock,
+          isDiscount,
+        };
+      })
+    );
+
+    const list = plainToInstance(ProductResponseDto, addProductInfo);
+    return {
+      list,
+      totalCount,
+    };
   }
 }
