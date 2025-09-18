@@ -23,4 +23,20 @@ export default class StoreController {
       return next(error);
     }
   };
+
+  updateStore = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = String(req.params.id);
+      const userId = String(res.user?.userId);
+      const storeData = req.body;
+
+      if (!userId) {
+        return res.status(401).json({ message: '권한이 없습니다.' });
+      }
+      const updatedStore = await this.storeService.updateStore(id, userId, storeData);
+      return res.status(200).json(updatedStore);
+    } catch (error) {
+      return next(error);
+    }
+  };
 }
