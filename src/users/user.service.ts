@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import { CreateUserDto, UserResponseDto } from './dtos/create-user.dto';
-import UserRepository from './user-repository';
+import UserRepository from './user.repository';
 import { ConflictError } from '../common/errors/error-type';
 
 export default class UserService {
