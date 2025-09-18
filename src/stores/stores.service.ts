@@ -5,6 +5,7 @@ import { StoreResponseDto } from './dtos/response.dto';
 import { UpdateStoreDto } from './dtos/update.dto';
 import { DetailResponseDto } from './dtos/detail-response.dto';
 import { plainToInstance } from 'class-transformer';
+import { MyStoreResponseDto } from './dtos/my-store-response.dto';
 
 export default class StoreService {
   private readonly storeRepository: StoreRepository;
@@ -53,5 +54,14 @@ export default class StoreService {
     }
 
     return plainToInstance(DetailResponseDto, store);
+  }
+
+  async getMyStore(storeId: string, userId: string): Promise<MyStoreResponseDto> {
+    const mystore = await this.storeRepository.findMyStore(storeId, userId);
+    if (!mystore) {
+      throw new NotFoundError('존재하지 않는 스토어입니다.');
+    }
+
+    return plainToInstance(MyStoreResponseDto, mystore);
   }
 }

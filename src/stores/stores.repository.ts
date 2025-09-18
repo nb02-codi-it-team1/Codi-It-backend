@@ -24,9 +24,15 @@ export default class StoreRepository {
     });
   }
 
+  async findMyStore(storeId: string, userId: string) {
+    return this.prisma.store.findUnique({
+      where: { id: storeId, userId },
+    });
+  }
+
   async updateStore(storeId: string, userId: string, data: Prisma.StoreUpdateInput) {
     return this.prisma.store.update({
-      where: { id: storeId, userId },
+      where: { id: storeId, userId, isDeleted: false },
       data,
     });
   }

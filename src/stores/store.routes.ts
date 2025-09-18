@@ -17,6 +17,8 @@ const StoresRouter = (prisma: PrismaClient): Router => {
   router.post('/', validateDto(CreateStoreDto), storeController.createStore);
   router.patch('/:storeId', validateDto(UpdateStoreDto), storeController.updateStore);
   router.get('/:storeId', storeController.getStoreDetails);
+  router.get('/detail/my', storeController.getMyStore);
+
   return router;
 };
 
