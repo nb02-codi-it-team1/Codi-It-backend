@@ -19,6 +19,8 @@ const StoresRouter = (prisma: PrismaClient): Router => {
   router.get('/:storeId', storeController.getStoreDetails);
   router.get('/detail/my', storeController.getMyStore);
   router.get('/detail/my/product', storeController.getMyStoreProducts);
+  router.post('/:storeId/favorite', storeController.registerStoreLike);
+  router.delete('/:storeId/favorite', storeController.deleteStoreLike);
 
   return router;
 };

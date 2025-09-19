@@ -8,6 +8,7 @@ import { plainToInstance } from 'class-transformer';
 import { MyStoreResponseDto } from './dtos/my-store-response.dto';
 import { MyStoreProductResponseDto } from './dtos/my-store-product-response.dto';
 import { ProductResponseDto } from './dtos/product-response.dto';
+import { StoreLikeResponseDto } from './dtos/store-like-response.dto';
 
 export default class StoreService {
   private readonly storeRepository: StoreRepository;
@@ -105,6 +106,53 @@ export default class StoreService {
     return {
       list,
       totalCount,
+    };
+  }
+
+  async registerStoreLike(userId: string, storeId: string): Promise<StoreLikeResponseDto> {
+    const existingStore = await this.storeRepository.findById(storeId);
+    if (!existingStore) {
+      throw new NotFoundError('상점을 찾을 수 없습니다.');
+    }
+
+    let storeInfo;
+
+    const existingStoreLike = await this.storeRepository.storeLikeCheck(userId, storeId);
+    if (!existingStoreLike) {
+      const storeLike = await this.storeRepository.createStoreLike(userId, storeId);
+      storeInfo = storeLike.store;
+      await this.storeRepository.increaseLikeCount(storeId);
+    }
+
+    const type = 'register';
+    const store = plainToInstance(StoreResponseDto, storeInfo);
+    return {
+      type,
+      store,
+    };
+  }
+
+  async deleteStoreLike(userId: string, storeId: string): Promise<StoreLikeResponseDto> {
+    const existingStore = await this.storeRepository.findById(storeId);
+    if (!existingStore) {
+      throw new NotFoundError('상점을 찾을 수 없습니다.');
+    }
+
+    let storeInfo;
+
+    const existingStoreLike = await this.storeRepository.storeLikeCheck(userId, storeId);
+    if (existingStoreLike) {
+      const deleteStoreLike = await this.storeRepository.deleteStroeLike(userId, storeId);
+      storeInfo = deleteStoreLike.store;
+      await this.storeRepository.decreaseLikeCount(storeId);
+    }
+
+    const type = 'delete';
+    const store = plainToInstance(StoreResponseDto, storeInfo);
+
+    return {
+      type,
+      store,
     };
   }
 }

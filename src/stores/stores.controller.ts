@@ -86,4 +86,28 @@ export default class StoreController {
       return next(error);
     }
   };
+
+  registerStoreLike = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = String(req.user?.userId);
+      const storeId = String(req.params.storeId);
+
+      const storeLike = await this.storeService.registerStoreLike(userId, storeId);
+      return res.status(200).json(storeLike);
+    } catch (error) {
+      return next(error);
+    }
+  };
+
+  deleteStoreLike = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = String(req.user?.userId);
+      const storeId = String(req.params.storeId);
+
+      const deleteLike = await this.storeService.deleteStoreLike(userId, storeId);
+      return res.status(200).json(deleteLike);
+    } catch (error) {
+      return next(error);
+    }
+  };
 }
