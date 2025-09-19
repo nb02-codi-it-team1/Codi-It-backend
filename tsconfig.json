@@ -53,7 +53,8 @@
   "include": [
     "src/**/*",
     "prisma/**/*.ts",
-    "types/**/*"
+    "types/**/*",
+    "reset-monthly-count.ts"
   ],
   "exclude": [
     "node_modules"
