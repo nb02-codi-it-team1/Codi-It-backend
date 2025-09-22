@@ -2,9 +2,10 @@ import { GetProductsParams } from './dto/create-product.dto';
 import { productService } from './service';
 import { Request, Response, NextFunction } from 'express';
 
+//  상품등록
 export const createProduct = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user?.id as string;
     const data = req.body;
     const product = await productService.createProduct(userId, data);
     res.status(200).json(product);
@@ -12,6 +13,8 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
     next(error);
   }
 };
+
+// 상품목록 조회
 
 export const getProducts = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -34,9 +37,11 @@ export const getProducts = async (req: Request, res: Response, next: NextFunctio
   }
 };
 
+// 상품 수정
+
 export const updateProduct = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user?.id as string;
     const productId = req.params.productId!;
     const updateData = req.body;
 
@@ -47,11 +52,25 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
   }
 };
 
+// 상품 상세조회
 export const getProductDetail = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const productId = req.params.productId!;
     const productDetail = await productService.getProductDetail(productId);
     res.status(200).json(productDetail);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 상품 삭제
+
+export const deleteProduct = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user?.id as string;
+    const productId = req.params.productId!;
+    const deleteProduct = await productService.deleteProduct(userId, productId);
+    res.status(204).send(deleteProduct);
   } catch (error) {
     next(error);
   }

@@ -173,4 +173,10 @@ export const productRepository = {
       totalCount,
     };
   },
+
+  delete: async (productId: string) => {
+    return await prisma.product.delete({
+      where: { id: productId },
+    });
+  },
 };

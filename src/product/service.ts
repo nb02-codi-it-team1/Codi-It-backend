@@ -3,30 +3,45 @@ import { productRepository } from './repository';
 import {
   CreateProductDto,
   GetProductsParams,
-  ProductInfoData,
+  DetailProductResponse,
   ProductListDto,
   UpdateProductDto,
   Stock,
+  CategoryType,
 } from './dto/create-product.dto';
 
 export const productService = {
   // 상품 등록
 
-  async createProduct(userId: string, body: CreateProductDto) {
+  async createProduct(userId: string, body: CreateProductDto): Promise<DetailProductResponse> {
     // seller 인지 확인
     const seller = await productRepository.findSellerByUserId(userId);
     if (!seller) {
       throw new BadRequestError();
     }
-    const { name, price, categoryName, stocks } = body;
+    const {
+      name,
+      price,
+      content,
+      image,
+      discountRate,
+      discountStartTime,
+      discountEndTime,
+      categoryName,
+      stocks,
+    } = body;
     if (!name || !price || !categoryName || !stocks) {
       throw new BadRequestError();
     }
     const product = await productRepository.create({
-      ...body,
+      name,
+      price,
+      content,
+      image,
+      discountRate,
+      discountStartTime: discountStartTime ? new Date(discountStartTime) : null,
+      discountEndTime: discountEndTime ? new Date(discountEndTime) : null,
       store: { connect: { id: seller.id } },
-      discountStartTime: body.discountStartTime ? new Date(body.discountStartTime) : null,
-      discountEndTime: body.discountEndTime ? new Date(body.discountEndTime) : null,
       Category: {
         create: { name: categoryName },
       },
@@ -38,8 +53,34 @@ export const productService = {
       },
     });
     return {
-      ...product,
-      storeName: product.store?.name,
+      id: product.id,
+      name: product.name,
+      image: product.image,
+      content: product.content || '',
+      createdAt: product.createAt.toISOString(),
+      updatedAt: product.updateAt.toISOString(),
+      reviewsRating: 0,
+      reviewsCount: 0,
+      reviews: [],
+      inquiries: [],
+      category: product.Category
+        ? [{ id: product.Category.id, name: product.Category.name as CategoryType }]
+        : [],
+      stocks: product.Stock.map((s) => ({
+        id: s.id,
+        productId: s.productId,
+        quantity: s.quantity,
+        size: { id: s.size.id, name: s.size.name }, // Size 타입 매핑
+      })),
+      storeId: product.storeId!,
+      storeName: product.store?.name || '',
+      price: Number(product.price),
+      discountPrice: product.discountRate
+        ? Number(product.price) * (1 - product.discountRate / 100)
+        : Number(product.price),
+      discountRate: product.discountRate || 0,
+      discountStartTime: product.discountStartTime?.toISOString() || null,
+      discountEndTime: product.discountEndTime?.toISOString() || null,
     };
   },
 
@@ -164,8 +205,8 @@ export const productService = {
         : [],
       stocks,
       storeId: product.storeId!,
-      storeName: product.Store?.name || '',
-      store: product.Store ? { id: product.Store.id, name: product.Store.name } : undefined,
+      storeName: product.store?.name || '',
+      store: product.store ? { id: product.store.id, name: product.store.name } : undefined,
       price: Number(product.price),
       discountPrice: product.discountRate
         ? Number(product.price) * (1 - product.discountRate / 100)
@@ -174,5 +215,20 @@ export const productService = {
       discountStartTime: product.discountStartTime?.toISOString() || null,
       discountEndTime: product.discountEndTime?.toISOString() || null,
     };
+  },
+
+  async deleteProduct(userId: string, productId: string) {
+    const seller = await productRepository.findSellerByUserId(userId);
+    if (!seller) {
+      throw new BadRequestError();
+    }
+
+    const product = await productRepository.findByProductId(productId);
+    if (!product) {
+      throw new NotFoundError();
+    }
+
+    const deleteProduct = await productRepository.delete(productId);
+    return deleteProduct;
   },
 };
