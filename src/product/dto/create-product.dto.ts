@@ -11,7 +11,7 @@ import {
 } from 'class-validator';
 
 export interface StocksDto {
-  sizeId: string;
+  sizeId: number;
   quantity: number;
 }
 
@@ -44,6 +44,11 @@ export interface ProductListDto {
   updatedAt: string;
   sales: number;
   isSoldOut: boolean;
+}
+
+export interface ProductListResponse {
+  list: ProductListDto[];
+  totalCount: number;
 }
 
 export class CreateProductDto {
@@ -87,9 +92,6 @@ export class CreateProductDto {
 }
 
 export class UpdateProductDto {
-  @IsString({ message: '상품 ID는 문자열이어야 합니다.' })
-  id: string;
-
   @IsOptional()
   @IsString({ message: '상품 이름은 문자열이어야 합니다.' })
   name?: string;
@@ -121,6 +123,9 @@ export class UpdateProductDto {
   @IsOptional()
   @IsString({ message: '카테고리 이름은 문자열이어야 합니다.' })
   categoryName?: string;
+
+  @IsString({ message: '상품 ID는 문자열이어야 합니다.' })
+  id: string;
 
   @IsOptional()
   @IsBoolean({ message: '매진 여부는 true/false여야 합니다.' })
@@ -167,6 +172,16 @@ export interface Stock {
   size: StockSize;
 }
 
+export interface StockResponse {
+  id: string;
+  productId: string;
+  quantity: number;
+  size: {
+    id: number;
+    name: string;
+  };
+}
+
 export class InquiryReply {
   id: string;
   content: string;
@@ -205,7 +220,7 @@ export interface DetailProductResponse {
   reviews: ReviewDto[];
   inquiries: DetailInquiry[];
   category: CategoryResponse[];
-  stocks: Stock[];
+  stocks: StockResponse[];
 }
 
 export interface StoreInfoProps {
