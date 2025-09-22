@@ -102,7 +102,7 @@ model Product {
 model Stock {
   id        String @id @default(cuid())
   productId String
-  sizeId    String
+  sizeId    Int
   quantity  Int
 
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
@@ -126,7 +126,7 @@ model CartItem {
   id        String   @id @default(cuid())
   cartId    String
   productId String
-  sizeId    String
+  sizeId    Int
   quantity  Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -239,7 +239,7 @@ model Notification {
 }
 
 model Size {
-  id   String @id @default(cuid())
+  id   Int @id @default(autoincrement())
   name String
   ko   String
   en   String
