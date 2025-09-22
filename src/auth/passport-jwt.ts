@@ -27,7 +27,7 @@ const extractor = (req: Request): string | null => {
   return fromHeader ?? null;
 };
 
-// 시크릿 키 검증
+// 사용자 인증
 passport.use(
   new JwtStrategy(
     {
