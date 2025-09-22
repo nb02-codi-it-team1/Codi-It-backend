@@ -3,9 +3,10 @@ import { Router } from 'express';
 import StoreRepository from './stores.repository';
 import StoreService from './stores.service';
 import StoreController from './stores.controller';
-import validateDto from 'src/common/utils/validate.dto';
+import validateDto from '../common/utils/validate.dto';
 import { CreateStoreDto } from './dtos/create.dto';
 import { UpdateStoreDto } from './dtos/update.dto';
+import upload from '../middleware/upload';
 
 const StoresRouter = (prisma: PrismaClient): Router => {
   const router = Router();
@@ -14,8 +15,18 @@ const StoresRouter = (prisma: PrismaClient): Router => {
   const storeService = new StoreService(storeRepository);
   const storeController = new StoreController(storeService);
 
-  router.post('/', validateDto(CreateStoreDto), storeController.createStore);
-  router.patch('/:storeId', validateDto(UpdateStoreDto), storeController.updateStore);
+  router.post(
+    '/',
+    upload.single('image'),
+    validateDto(CreateStoreDto),
+    storeController.createStore
+  );
+  router.patch(
+    '/:storeId',
+    upload.single('image'),
+    validateDto(UpdateStoreDto),
+    storeController.updateStore
+  );
   router.get('/:storeId', storeController.getStoreDetails);
   router.get('/detail/my', storeController.getMyStore);
   router.get('/detail/my/product', storeController.getMyStoreProducts);

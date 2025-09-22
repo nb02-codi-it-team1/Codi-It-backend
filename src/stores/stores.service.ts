@@ -1,4 +1,4 @@
-import { ConflictError, NotFoundError, UnauthorizedError } from 'src/common/errors/error-type';
+import { ConflictError, NotFoundError, UnauthorizedError } from '../common/errors/error-type';
 import { CreateStoreDto } from './dtos/create.dto';
 import StoreRepository from './stores.repository';
 import { StoreResponseDto } from './dtos/response.dto';
@@ -17,25 +17,38 @@ export default class StoreService {
     this.storeRepository = storeRepository;
   }
 
-  async createStore(userId: string, data: CreateStoreDto): Promise<StoreResponseDto> {
+  async createStore(
+    userId: string,
+    data: CreateStoreDto,
+    file?: Express.Multer.File
+  ): Promise<StoreResponseDto> {
     const existingStore = await this.storeRepository.findByName(data.name);
     if (existingStore) {
       throw new ConflictError('이미 존재하는 스토어 이름입니다.');
     }
 
-    const newStore = await this.storeRepository.createStore({
+    const storeInfo = {
       ...data,
       user: {
         connect: { id: userId },
       },
-    });
+    };
+
+    if (file) {
+      storeInfo.image = file.path;
+    } else {
+      storeInfo.image = 'wwww.sample.png'; // 기본 이미지 설정
+    }
+    const newStore = await this.storeRepository.createStore(storeInfo);
+
     return plainToInstance(StoreResponseDto, newStore);
   }
 
   async updateStore(
     storeId: string,
     userId: string,
-    data: UpdateStoreDto
+    data: UpdateStoreDto,
+    file?: Express.Multer.File
   ): Promise<StoreResponseDto> {
     const existingStore = await this.storeRepository.findById(storeId);
     if (!existingStore) {
@@ -44,8 +57,12 @@ export default class StoreService {
     if (existingStore.userId !== userId) {
       throw new UnauthorizedError('권한이 없습니다.');
     }
-
-    const updatedStore = await this.storeRepository.updateStore(storeId, userId, data);
+    const updateData = { ...data };
+    if (file) {
+      const newImageUrl = file.path;
+      updateData.image = newImageUrl;
+    }
+    const updatedStore = await this.storeRepository.updateStore(storeId, userId, updateData);
 
     return plainToInstance(StoreResponseDto, updatedStore);
   }
