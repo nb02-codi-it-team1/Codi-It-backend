@@ -56,7 +56,7 @@ export class CreateProductDto {
   price: number;
 
   @IsOptional()
-  @IsString({ message: '상품설명은 문자열이어야 합니다.' })
+  @IsString({ message: '제품 상품 정보는 문자열이어야 합니다.' })
   content: string;
 
   @IsOptional()
@@ -77,7 +77,7 @@ export class CreateProductDto {
 
   @IsNotEmpty({ message: '상품 카테고리는 필수 입력 항목입니다.' })
   @IsString({ message: '상품 카테고리 이름은 문자열이어야 합니다.' })
-  categoryName: string;
+  categoryName: CategoryType;
 
   @IsArray()
   @ValidateNested({ each: true })
@@ -131,13 +131,28 @@ export class UpdateProductDto {
   stocks?: StocksDto[];
 }
 
-export interface ReviewCount {
+export interface ReviewDto {
   rate1Length: number;
   rate2Length: number;
   rate3Length: number;
   rate4Length: number;
   rate5Length: number;
   sumScore: number;
+}
+
+export enum CategoryType {
+  ALL = 'all',
+  TOP = 'top',
+  BOTTOM = 'bottom',
+  DRESS = 'dress',
+  OUTER = 'outer',
+  SKIRT = 'skirt',
+  SHOES = 'shoes',
+  ACC = 'acc',
+}
+export class CategoryResponse {
+  id: string;
+  name: CategoryType;
 }
 
 interface StockSize {
@@ -152,25 +167,54 @@ export interface Stock {
   size: StockSize;
 }
 
-export interface ProductInfoData {
+export class InquiryReply {
+  id: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+  user: { id: string; name: string };
+}
+
+export class DetailInquiry {
+  id: string;
+  title: string;
+  content: string;
+  status: string;
+  isSecret: boolean;
+  createdAt: string;
+  updatedAt: string;
+  reply?: InquiryReply | null;
+}
+
+export interface DetailProductResponse {
   id: string;
   name: string;
   image: string;
+  content: string;
   createdAt: string;
   updatedAt: string;
   reviewsRating: number;
-  content: string;
   storeId: string;
   storeName: string;
   price: number;
   discountPrice: number;
   discountRate: number;
-  discountStartTime: string;
-  discountEndTime: string;
+  discountStartTime: string | null;
+  discountEndTime: string | null;
   reviewsCount: number;
-  reviews: ReviewCount;
-  inquiries: unknown[];
-  category: unknown;
+  reviews: ReviewDto[];
+  inquiries: DetailInquiry[];
+  category: CategoryResponse[];
   stocks: Stock[];
-  store?: unknown;
+}
+
+export interface StoreInfoProps {
+  id: string;
+  name: string;
+  address?: string;
+  detailAddress?: string;
+  phoneNumber?: string;
+  favoriteCount?: number;
+  content?: string;
+  image?: string;
 }
