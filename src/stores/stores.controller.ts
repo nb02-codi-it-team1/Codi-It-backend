@@ -1,6 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
 import StoreService from './stores.service';
 import { CreateStoreDto } from './dtos/create.dto';
+import { plainToInstance } from 'class-transformer';
+import { StoreResponseDto } from './dtos/response.dto';
+import { DetailResponseDto } from './dtos/detail-response.dto';
 
 export default class StoreController {
   private readonly storeService: StoreService;
@@ -11,14 +14,17 @@ export default class StoreController {
 
   createStore = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userId = String(res.user?.userId);
+      const userId = String(req.user?.id);
       const storeData: CreateStoreDto = req.body;
 
       if (!userId) {
         return res.status(401).json({ message: '권한이 없습니다.' });
       }
       const newStore = await this.storeService.createStore(userId, storeData);
-      return res.status(201).json(newStore);
+      const storeResponse = plainToInstance(StoreResponseDto, newStore, {
+        excludeExtraneousValues: true,
+      });
+      return res.status(201).json(storeResponse);
     } catch (error) {
       return next(error);
     }
@@ -27,14 +33,17 @@ export default class StoreController {
   updateStore = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const storeId = String(req.params.storeId);
-      const userId = String(res.user?.userId);
+      const userId = String(req.user?.id);
       const data = req.body;
 
       if (!userId) {
         return res.status(401).json({ message: '권한이 없습니다.' });
       }
       const updatedStore = await this.storeService.updateStore(storeId, userId, data);
-      return res.status(200).json(updatedStore);
+      const updateResponse = plainToInstance(StoreResponseDto, updatedStore, {
+        excludeExtraneousValues: true,
+      });
+      return res.status(200).json(updateResponse);
     } catch (error) {
       return next(error);
     }
@@ -45,8 +54,10 @@ export default class StoreController {
       const storeId = String(req.params.storeId);
 
       const store = await this.storeService.getStoreById(storeId);
-
-      return res.status(200).json(store);
+      const storeResponse = plainToInstance(DetailResponseDto, store, {
+        excludeExtraneousValues: true,
+      });
+      return res.status(200).json(storeResponse);
     } catch (error) {
       return next(error);
     }
@@ -54,14 +65,13 @@ export default class StoreController {
 
   getMyStore = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const storeId = String(req.params.storeId);
-      const userId = String(req.user?.userId);
+      const userId = String(req.user?.id);
 
       if (!userId) {
         return res.status(401).json({ message: '인증되지 않은 사용자입니다.' });
       }
 
-      const mystore = await this.storeService.getMyStore(storeId, userId);
+      const mystore = await this.storeService.getMyStore(userId);
       return res.status(200).json(mystore);
     } catch (error) {
       return next(error);
@@ -70,17 +80,11 @@ export default class StoreController {
 
   getMyStoreProducts = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const storeId = String(req.params.storeId);
-      const userId = String(req.user?.userId);
+      const userId = String(req.user?.id);
       const page = Number(req.query.page) || 1;
       const pageSize = Number(req.query.pageSize) || 10;
 
-      const productList = await this.storeService.getMyStoreProducts(
-        storeId,
-        userId,
-        page,
-        pageSize
-      );
+      const productList = await this.storeService.getMyStoreProducts(userId, page, pageSize);
       return res.status(200).json(productList);
     } catch (error) {
       return next(error);
@@ -89,7 +93,7 @@ export default class StoreController {
 
   registerStoreLike = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userId = String(req.user?.userId);
+      const userId = String(req.user?.id);
       const storeId = String(req.params.storeId);
 
       const storeLike = await this.storeService.registerStoreLike(userId, storeId);
@@ -101,7 +105,7 @@ export default class StoreController {
 
   deleteStoreLike = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userId = String(req.user?.userId);
+      const userId = String(req.user?.id);
       const storeId = String(req.params.storeId);
 
       const deleteLike = await this.storeService.deleteStoreLike(userId, storeId);

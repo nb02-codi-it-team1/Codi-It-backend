@@ -22,13 +22,15 @@ export default class StoreService {
     data: CreateStoreDto,
     file?: Express.Multer.File
   ): Promise<StoreResponseDto> {
-    const existingStore = await this.storeRepository.findByName(data.name);
+    const trimmedName = data.name.trim();
+    const existingStore = await this.storeRepository.findByName(trimmedName);
     if (existingStore) {
       throw new ConflictError('이미 존재하는 스토어 이름입니다.');
     }
 
     const storeInfo = {
       ...data,
+      name: trimmedName,
       user: {
         connect: { id: userId },
       },
@@ -57,10 +59,22 @@ export default class StoreService {
     if (existingStore.userId !== userId) {
       throw new UnauthorizedError('권한이 없습니다.');
     }
+
     const updateData = { ...data };
+    if (updateData.name) {
+      updateData.name = updateData.name.trim();
+    }
+
     if (file) {
       const newImageUrl = file.path;
       updateData.image = newImageUrl;
+    }
+
+    if (updateData.name && updateData.name !== existingStore.name) {
+      const nameExists = await this.storeRepository.findByName(updateData.name);
+      if (nameExists) {
+        throw new ConflictError('이미 존재하는 스토어 이름입니다.');
+      }
     }
     const updatedStore = await this.storeRepository.updateStore(storeId, userId, updateData);
 
@@ -76,8 +90,8 @@ export default class StoreService {
     return plainToInstance(DetailResponseDto, store);
   }
 
-  async getMyStore(storeId: string, userId: string): Promise<MyStoreResponseDto> {
-    const mystore = await this.storeRepository.findMyStore(storeId, userId);
+  async getMyStore(userId: string): Promise<MyStoreResponseDto> {
+    const mystore = await this.storeRepository.findMyStore(userId);
     if (!mystore) {
       throw new NotFoundError('존재하지 않는 스토어입니다.');
     }
@@ -86,40 +100,33 @@ export default class StoreService {
   }
 
   async getMyStoreProducts(
-    storeId: string,
     userId: string,
     page: number,
     pageSize: number
   ): Promise<MyStoreProductResponseDto> {
-    const store = await this.storeRepository.findById(storeId);
-    if (!store) {
-      throw new NotFoundError('존재하지 않는 스토어입니다.');
-    }
-
-    if (store.userId !== userId) {
-      throw new UnauthorizedError('접근 권한이 없습니다.');
-    }
-
-    const products = await this.storeRepository.findMyStoreProducts(storeId, page, pageSize);
-    const totalCount = await this.storeRepository.countMyStoreProducts(storeId);
-
-    const addProductInfo = await Promise.all(
-      products.map(async (product) => {
-        const stock = this.storeRepository.calculateStock(product.id);
-        const isDiscount =
-          (product.discountRate ?? 0) > 0 &&
-          product.discountEndTime !== null &&
-          product.discountEndTime > new Date();
-
-        return {
-          ...product,
-          stock,
-          isDiscount,
-        };
-      })
+    const productsWithStock = await this.storeRepository.findMyStoreProducts(
+      userId,
+      page,
+      pageSize
     );
+    const totalCount = await this.storeRepository.countMyStoreProducts(userId);
 
-    const list = plainToInstance(ProductResponseDto, addProductInfo);
+    const productInfo = productsWithStock.map((product) => {
+      const stock = product.Stock.reduce((sum, current) => sum + current.quantity, 0);
+      const isDiscount =
+        (product.discountRate ?? 0) > 0 &&
+        product.discountEndTime !== null &&
+        product.discountEndTime > new Date();
+
+      return {
+        ...product,
+        stock,
+        isDiscount,
+        Stock: undefined,
+      };
+    });
+
+    const list = plainToInstance(ProductResponseDto, productInfo);
     return {
       list,
       totalCount,
@@ -132,17 +139,15 @@ export default class StoreService {
       throw new NotFoundError('상점을 찾을 수 없습니다.');
     }
 
-    let storeInfo;
-
     const existingStoreLike = await this.storeRepository.storeLikeCheck(userId, storeId);
     if (!existingStoreLike) {
-      const storeLike = await this.storeRepository.createStoreLike(userId, storeId);
-      storeInfo = storeLike.store;
+      await this.storeRepository.createStoreLike(userId, storeId);
       await this.storeRepository.increaseLikeCount(storeId);
     }
 
+    const updatedLikeStore = await this.storeRepository.findById(storeId);
     const type = 'register';
-    const store = plainToInstance(StoreResponseDto, storeInfo);
+    const store = plainToInstance(StoreResponseDto, updatedLikeStore);
     return {
       type,
       store,
@@ -155,17 +160,15 @@ export default class StoreService {
       throw new NotFoundError('상점을 찾을 수 없습니다.');
     }
 
-    let storeInfo;
-
     const existingStoreLike = await this.storeRepository.storeLikeCheck(userId, storeId);
     if (existingStoreLike) {
-      const deleteStoreLike = await this.storeRepository.deleteStroeLike(userId, storeId);
-      storeInfo = deleteStoreLike.store;
+      await this.storeRepository.deleteStroeLike(userId, storeId);
       await this.storeRepository.decreaseLikeCount(storeId);
     }
 
+    const updatedLikeStore = await this.storeRepository.findById(storeId);
     const type = 'delete';
-    const store = plainToInstance(StoreResponseDto, storeInfo);
+    const store = plainToInstance(StoreResponseDto, updatedLikeStore);
 
     return {
       type,

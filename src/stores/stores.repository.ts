@@ -24,9 +24,9 @@ export default class StoreRepository {
     });
   }
 
-  async findMyStore(storeId: string, userId: string) {
+  async findMyStore(userId: string) {
     return this.prisma.store.findUnique({
-      where: { id: storeId, userId },
+      where: { userId },
     });
   }
 
@@ -37,20 +37,35 @@ export default class StoreRepository {
     });
   }
 
-  async findMyStoreProducts(storeId: string, page: number, pageSize: number) {
+  async findMyStoreProducts(userId: string, page: number, pageSize: number) {
     const skip = (page - 1) * pageSize;
 
     return this.prisma.product.findMany({
-      where: { storeId },
+      where: {
+        store: {
+          userId,
+        },
+      },
+      include: {
+        Stock: {
+          select: {
+            quantity: true,
+          },
+        },
+      },
       skip,
       take: pageSize,
       orderBy: { createdAt: 'desc' },
     });
   }
 
-  async countMyStoreProducts(storeId: string): Promise<number> {
+  async countMyStoreProducts(userId: string): Promise<number> {
     return this.prisma.product.count({
-      where: { storeId },
+      where: {
+        store: {
+          userId,
+        },
+      },
     });
   }
 
