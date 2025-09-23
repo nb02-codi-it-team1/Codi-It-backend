@@ -23,7 +23,7 @@ model User {
   image     String?
   points    Int?
   type      UserType
-  createdAt  DateTime @default(now())
+  createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   isDeleted Boolean  @default(false)
 
@@ -44,16 +44,16 @@ enum UserType {
 model Store {
   id                 String   @id @default(cuid())
   userId             String   @unique
-  name               String   @db.VarChar(255)
+  name               String   @unique @db.VarChar(255)
   address            String   @db.VarChar(255)
   detailAddress      String   @db.VarChar(255)
   phoneNumber        String   @db.VarChar(20)
   content            String
-  image              String
-  productCount       Int?
-  favoriteCount      Int?
-  monthFavoriteCount Int?
-  totalSoldCount     Int?
+  image              String?
+  productCount       Int      @default(0)
+  favoriteCount      Int      @default(0)
+  monthFavoriteCount Int      @default(0)
+  totalSoldCount     Int      @default(0)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
   isDeleted          Boolean  @default(false)
@@ -85,8 +85,8 @@ model Product {
   discountRate      Int?
   discountStartTime DateTime?
   discountEndTime   DateTime?
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
   isSoldOut         Boolean   @default(false)
 
   store    Store      @relation(fields: [storeId], references: [id], onDelete: Cascade)
@@ -112,9 +112,9 @@ model Stock {
 }
 
 model Cart {
-  id       String   @id @default(cuid())
-  buyerId  String
-  quantity Int
+  id        String   @id @default(cuid())
+  buyerId   String
+  quantity  Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -257,18 +257,18 @@ model Category {
 }
 
 model Grade {
-  id        String  @id @default(cuid())
-  name      String  
+  id        String @id @default(cuid())
+  name      String
   rate      Int
   minAmount Int
 
   User User[]
 }
 
-/* 
-VIP 1,000,000원 이상 구매 
-Black 500,000원 이상 구매 
-Red 300,000원 이상 구매 
-Orange 100,000원 이상 구매 
-Green 신규 회원
+/**
+ * VIP 1,000,000원 이상 구매
+ * Black 500,000원 이상 구매
+ * Red 300,000원 이상 구매
+ * Orange 100,000원 이상 구매
+ * Green 신규 회원
  */
