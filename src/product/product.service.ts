@@ -1,5 +1,5 @@
-import { BadRequestError, NotFoundError } from 'src/common/errors/error-type';
-import { productRepository } from './repository';
+import { BadRequestError, NotFoundError } from '../common/errors/error-type';
+import { productRepository } from './product.repository';
 import {
   CreateProductDto,
   GetProductsParams,
@@ -8,14 +8,14 @@ import {
   CategoryType,
   ProductListResponse,
   ReviewDto,
-} from './dto/create-product.dto';
+} from './dto/product.dto';
 import { Prisma } from '@prisma/client';
 
 export const productService = {
   // 상품 등록
 
   async createProduct(userId: string, body: CreateProductDto): Promise<DetailProductResponse> {
-    // seller 인지 확인
+    // seller 인지 확인, 스토어 존재여부
     const seller = await productRepository.findSellerByUserId(userId);
     if (!seller) {
       throw new BadRequestError();

@@ -2,36 +2,11 @@ import prisma from '../src/common/prisma/client';
 
 async function main() {
   const grades = [
-    {
-      id: 'grade_green',
-      name: 'green',
-      rate: 5,
-      minAmount: 0, // 기본값
-    },
-    {
-      id: 'grade_orange',
-      name: 'orange',
-      rate: 7,
-      minAmount: 100000, // 누적 10만원 이상
-    },
-    {
-      id: 'grade_red',
-      name: 'red',
-      rate: 9,
-      minAmount: 300000, // 누적 30만원 이상
-    },
-    {
-      id: 'grade_black',
-      name: 'black',
-      rate: 11,
-      minAmount: 500000, // 누적 50만원 이상
-    },
-    {
-      id: 'grade_vip',
-      name: 'vip',
-      rate: 13,
-      minAmount: 1000000, // 누적 100만원 이상
-    },
+    { id: 'grade_green', name: 'green', rate: 5, minAmount: 0 },
+    { id: 'grade_orange', name: 'orange', rate: 7, minAmount: 100000 },
+    { id: 'grade_red', name: 'red', rate: 9, minAmount: 300000 },
+    { id: 'grade_black', name: 'black', rate: 11, minAmount: 500000 },
+    { id: 'grade_vip', name: 'vip', rate: 13, minAmount: 1000000 },
   ];
 
   for (const grade of grades) {
@@ -45,7 +20,55 @@ async function main() {
       create: grade,
     });
   }
-}
+
+  const stores = [
+    {
+      id: 'store1',
+      userId: 'cmfuwufxm0001a8o901prd8y8',
+      name: '하이버',
+      address: '서울시 강남구',
+      detailAddress: '역삼동 123-45',
+      phoneNumber: '010-1234-5678',
+      content: '최고의 상품을 판매하는 스토어입니다.',
+      image: 'https://example.com/store1.png',
+      productCount: 0,
+      favoriteCount: 0,
+      monthFavoriteCount: 0,
+      totalSoldCount: 0,
+      isDeleted: false,
+    },
+  ];
+
+  for (const store of stores) {
+    await prisma.store.upsert({
+      where: { userId: store.userId },
+      update: {
+        name: store.name,
+        address: store.address,
+        detailAddress: store.detailAddress,
+        phoneNumber: store.phoneNumber,
+        content: store.content,
+        image: store.image,
+        productCount: store.productCount,
+        favoriteCount: store.favoriteCount,
+        monthFavoriteCount: store.monthFavoriteCount,
+        totalSoldCount: store.totalSoldCount,
+        isDeleted: store.isDeleted,
+      },
+      create: store,
+    });
+  } // <-- for stores 끝
+  const sizes = [
+    { name: 'Small', en: 'S', ko: '스몰' },
+    { name: 'Medium', en: 'M', ko: '미디엄' },
+    { name: 'Large', en: 'L', ko: '라지' },
+    { name: 'Extra Large', en: 'XL', ko: '엑스라지' },
+  ];
+  await prisma.size.createMany({
+    data: sizes,
+    skipDuplicates: true, // 이미 있으면 무시
+  });
+} // <-- main 함수 끝
 
 main()
   .then(() => {

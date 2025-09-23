@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   IsArray,
   IsDate,
@@ -10,8 +11,11 @@ import {
   IsBoolean,
 } from 'class-validator';
 
-export interface StocksDto {
+export class StocksDto {
+  @IsInt()
   sizeId: number;
+
+  @IsInt()
   quantity: number;
 }
 
@@ -74,10 +78,12 @@ export class CreateProductDto {
 
   @IsOptional()
   @IsDate({ message: '할인기간은 날짜형식이어야 합니다.' })
+  @Type(() => Date)
   discountStartTime: Date | null;
 
   @IsOptional()
-  @IsDate({ message: '상품 가격은 숫자여야 합니다.' })
+  @IsDate({ message: '할인 기간은 날짜형식이어야 합니다.' })
+  @Type(() => Date)
   discountEndTime: Date | null;
 
   @IsNotEmpty({ message: '상품 카테고리는 필수 입력 항목입니다.' })
@@ -87,7 +93,7 @@ export class CreateProductDto {
   @IsArray()
   @ValidateNested({ each: true })
   @IsNotEmpty({ message: '상품이름은 필수 입력 항목입니다.' })
-  @IsString({ message: '상품번호는 문자열이어야 합니다.' })
+  @Type(() => StocksDto)
   stocks: StocksDto[];
 }
 
