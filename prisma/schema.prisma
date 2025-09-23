@@ -253,7 +253,7 @@ model Category {
   productId String @unique
   name      String
 
-  product Product @relation(fields: [productId], references: [id])
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
 model Grade {
