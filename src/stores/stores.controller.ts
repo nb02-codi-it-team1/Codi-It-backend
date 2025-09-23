@@ -4,6 +4,9 @@ import { CreateStoreDto } from './dtos/create.dto';
 import { plainToInstance } from 'class-transformer';
 import { StoreResponseDto } from './dtos/response.dto';
 import { DetailResponseDto } from './dtos/detail-response.dto';
+import { ProductResponseDto } from './dtos/product-response.dto';
+import { StoreLikeResponseDto } from './dtos/store-like-response.dto';
+import { MyStoreResponseDto } from './dtos/my-store-response.dto';
 
 export default class StoreController {
   private readonly storeService: StoreService;
@@ -72,7 +75,10 @@ export default class StoreController {
       }
 
       const mystore = await this.storeService.getMyStore(userId);
-      return res.status(200).json(mystore);
+      const mystoreResponse = plainToInstance(MyStoreResponseDto, mystore, {
+        excludeExtraneousValues: true,
+      });
+      return res.status(200).json(mystoreResponse);
     } catch (error) {
       return next(error);
     }
@@ -85,7 +91,10 @@ export default class StoreController {
       const pageSize = Number(req.query.pageSize) || 10;
 
       const productList = await this.storeService.getMyStoreProducts(userId, page, pageSize);
-      return res.status(200).json(productList);
+      const productListResponse = plainToInstance(ProductResponseDto, productList, {
+        excludeExtraneousValues: true,
+      });
+      return res.status(200).json(productListResponse);
     } catch (error) {
       return next(error);
     }
@@ -97,7 +106,10 @@ export default class StoreController {
       const storeId = String(req.params.storeId);
 
       const storeLike = await this.storeService.registerStoreLike(userId, storeId);
-      return res.status(200).json(storeLike);
+      const storeLikeResponse = plainToInstance(StoreLikeResponseDto, storeLike, {
+        excludeExtraneousValues: true,
+      });
+      return res.status(200).json(storeLikeResponse);
     } catch (error) {
       return next(error);
     }
@@ -109,7 +121,10 @@ export default class StoreController {
       const storeId = String(req.params.storeId);
 
       const deleteLike = await this.storeService.deleteStoreLike(userId, storeId);
-      return res.status(200).json(deleteLike);
+      const deleteLikeResponse = plainToInstance(StoreLikeResponseDto, deleteLike, {
+        excludeExtraneousValues: true,
+      });
+      return res.status(200).json(deleteLikeResponse);
     } catch (error) {
       return next(error);
     }
