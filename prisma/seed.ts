@@ -1,4 +1,5 @@
 import prisma from '../src/common/prisma/client';
+import bcrypt from 'bcrypt';
 
 async function main() {
   const grades = [
@@ -8,18 +9,29 @@ async function main() {
     { id: 'grade_black', name: 'black', rate: 11, minAmount: 500000 },
     { id: 'grade_vip', name: 'vip', rate: 13, minAmount: 1000000 },
   ];
-
   for (const grade of grades) {
     await prisma.grade.upsert({
       where: { id: grade.id },
-      update: {
-        name: grade.name,
-        rate: grade.rate,
-        minAmount: grade.minAmount,
-      },
+      update: grade,
       create: grade,
     });
   }
+
+  // 2. User 생성 (grade 연결 포함)
+  await prisma.user.upsert({
+    where: { id: 'cmfw4ai860000a8v489fa5cqy' },
+    update: {},
+    create: {
+      id: 'cmfw4ai860000a8v489fa5cqy',
+      name: '옷팜',
+      email: 'test01@test.com',
+      password: await bcrypt.hash('12345678', 10),
+      type: 'SELLER',
+      grade: {
+        connect: { id: 'grade_green' },
+      },
+    },
+  });
 
   const categories = ['TOP', 'BOTTOM', 'DRESS', 'OUTER', 'SKIRT', 'SHOES', 'ACC'];
 
