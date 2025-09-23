@@ -34,6 +34,13 @@ export const productService = {
     if (!name || !price || !categoryName || !stocks) {
       throw new BadRequestError();
     }
+
+    // categoryName으로 id 찾기
+    const category = await productRepository.findCategoryByName(categoryName);
+    if (!category) {
+      throw new NotFoundError();
+    }
+
     const product = await productRepository.create({
       name,
       price,
@@ -44,7 +51,7 @@ export const productService = {
       discountEndTime: discountEndTime ? new Date(discountEndTime) : null,
       store: { connect: { id: seller.id } },
       Category: {
-        create: { name: categoryName },
+        connect: { id: category.id },
       },
       Stock: {
         create: stocks.map((stock) => ({
@@ -192,6 +199,13 @@ export const productService = {
     if (!product) {
       throw new NotFoundError();
     }
+
+    let categoryConnect = undefined;
+    if (body.categoryName) {
+      const category = await productRepository.findCategoryByName(body.categoryName);
+      if (!category) throw new BadRequestError();
+      categoryConnect = { connect: { id: category.id } };
+    }
     const data = {
       name: body.name,
       price: body.price,
@@ -201,16 +215,7 @@ export const productService = {
       discountStartTime: body.discountStartTime ? new Date(body.discountStartTime) : null,
       discountEndTime: body.discountEndTime ? new Date(body.discountEndTime) : null,
       isSoldOut: body.isSoldOut,
-
-      // 카테고리 업데이트 (없으면 create, 있으면 update)
-      Category: body.categoryName
-        ? {
-            upsert: {
-              create: { name: body.categoryName },
-              update: { name: body.categoryName },
-            },
-          }
-        : undefined,
+      Category: categoryConnect,
     };
 
     const stocks = body.stocks?.map((s) => ({

@@ -88,13 +88,14 @@ model Product {
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   isSoldOut         Boolean   @default(false)
+  categoryId        String?
 
-  store    Store?      @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  store    Store?     @relation(fields: [storeId], references: [id], onDelete: Cascade)
   CartItem CartItem[]
   Review   Review[]
   Stock    Stock[]
   Inquiry  Inquiry[]
-  Category Category?
+  Category Category? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   @@index([name])
 }
@@ -239,7 +240,7 @@ model Notification {
 }
 
 model Size {
-  id   Int @id @default(autoincrement())
+  id   Int    @id @default(autoincrement())
   name String
   ko   String
   en   String
@@ -250,10 +251,9 @@ model Size {
 
 model Category {
   id        String @id @default(cuid())
-  productId String @unique
-  name      String
+  name      String @unique
 
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product Product[]
 }
 
 model Grade {

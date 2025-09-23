@@ -21,10 +21,20 @@ async function main() {
     });
   }
 
+  const categories = ['TOP', 'BOTTOM', 'DRESS', 'OUTER', 'SKIRT', 'SHOES', 'ACC'];
+
+  for (const name of categories) {
+    await prisma.category.upsert({
+      where: { name },
+      update: {},
+      create: { name },
+    });
+  }
+
   const stores = [
     {
       id: 'store1',
-      userId: 'cmfuwufxm0001a8o901prd8y8',
+      userId: 'cmfw4ai860000a8v489fa5cqy',
       name: '하이버',
       address: '서울시 강남구',
       detailAddress: '역삼동 123-45',

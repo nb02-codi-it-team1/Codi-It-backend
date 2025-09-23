@@ -152,7 +152,6 @@ export interface ReviewDto {
 }
 
 export enum CategoryType {
-  ALL = 'all',
   TOP = 'top',
   BOTTOM = 'bottom',
   DRESS = 'dress',

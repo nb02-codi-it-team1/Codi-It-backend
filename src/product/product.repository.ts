@@ -56,6 +56,7 @@ export const productRepository = {
       },
     }),
   findSellerByUserId: (userId: string) => prisma.store.findUnique({ where: { userId } }),
+  findCategoryByName: (name: string) => prisma.category.findUnique({ where: { name } }),
   findByProductId: (productId: string) => prisma.product.findUnique({ where: { id: productId } }),
   findMany(
     where: Prisma.ProductWhereInput,
