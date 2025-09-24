@@ -20,23 +20,3 @@ export class CreateUserDto {
   @IsEnum(UserType, { message: '회원 유형은 BUYER 또는 SELLER 여야 합니다.' })
   type: UserType;
 }
-
-export interface GradeResponseDto {
-  id: string;
-  name: string;
-  rate: number;
-  minAmount: number;
-}
-
-export interface UserResponseDto {
-  id: string;
-  name: string;
-  email: string;
-  password: string;
-  type: string;
-  points: number | null;
-  createdAt: Date;
-  updatedAt: Date;
-  image: string | null;
-  grade: GradeResponseDto;
-}
