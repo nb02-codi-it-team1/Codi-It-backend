@@ -1,5 +1,6 @@
 import prisma from 'src/common/prisma/client';
-import { Prisma } from '@prisma/client';
+import { InquiryStatus, Prisma } from '@prisma/client';
+import { CreateInquiryDto } from './dto/inquity.dto';
 export const productRepository = {
   create: (data: Prisma.ProductCreateInput) =>
     prisma.product.create({
@@ -92,6 +93,39 @@ export const productRepository = {
   delete: async (productId: string) => {
     return await prisma.product.delete({
       where: { id: productId },
+    });
+  },
+  createInquiry: async (userId: string, productId: string, data: CreateInquiryDto) => {
+    return prisma.inquiry.create({
+      data: {
+        userId,
+        productId,
+        title: data.title,
+        content: data.content,
+        status: InquiryStatus.WaitingAnswer,
+        isSecret: data.isSecret ?? false,
+      },
+    });
+  },
+  getInquiries: async (productId: string) => {
+    return prisma.inquiry.findMany({
+      where: { productId },
+      include: {
+        user: {
+          select: {
+            name: true,
+          },
+        },
+        InquiryReply: {
+          include: {
+            user: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
     });
   },
 };

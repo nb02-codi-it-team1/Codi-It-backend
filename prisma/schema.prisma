@@ -33,6 +33,7 @@ model User {
   Store        Store?
   StoreLike    StoreLike[]
   Inquiry      Inquiry[]
+  InquiryReply InquiryReply[]
   Notification Notification[]
 }
 
@@ -221,11 +222,13 @@ enum InquiryStatus {
 model InquiryReply {
   id        String   @id @default(cuid())
   inquiryId String   @unique
+  userId    String   
   content   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   inquiry Inquiry @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id])
 }
 
 model Notification {
