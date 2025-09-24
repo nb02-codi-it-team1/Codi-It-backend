@@ -7,7 +7,6 @@ import validateDto from '../common/utils/validate.dto';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import passport from 'passport';
-import { authorizeBuyer } from '../middleware/authorization';
 
 const router = Router();
 const userRepository = new UserRepository(prisma);
@@ -29,7 +28,6 @@ router.patch(
 router.get(
   '/me/likes',
   passport.authenticate('jwt', { session: false }),
-  authorizeBuyer,
   userController.getUserLikedStores
 );
 // 회원 탈퇴
