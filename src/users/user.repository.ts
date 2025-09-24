@@ -19,4 +19,31 @@ export default class UserRepository {
       include: { grade: true },
     });
   }
+  async getUserById(id: string) {
+    return this.prisma.user.findUnique({
+      where: { id },
+      include: { grade: true },
+    });
+  }
+
+  async updateUser(id: string, data: Prisma.UserUpdateInput) {
+    return this.prisma.user.update({
+      where: { id },
+      data,
+      include: { grade: true },
+    });
+  }
+
+  async getUserLikedStores(userId: string) {
+    return this.prisma.storeLike.findMany({
+      where: { userId },
+      include: { store: true },
+    });
+  }
+
+  async deleteUser(id: string) {
+    return this.prisma.user.delete({
+      where: { id },
+    });
+  }
 }

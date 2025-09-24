@@ -1,7 +1,9 @@
 import bcrypt from 'bcrypt';
-import { CreateUserDto, UserResponseDto } from './dtos/create-user.dto';
 import UserRepository from './user.repository';
-import { ConflictError } from '../common/errors/error-type';
+import { CreateUserDto } from './dtos/create-user.dto';
+import { UpdateUserDto } from './dtos/update-user.dto';
+import { ConflictError, NotFoundError, UnauthorizedError } from '../common/errors/error-type';
+import { UserMapper } from './dtos/user-response';
 
 export default class UserService {
   private readonly userRepository: UserRepository;
@@ -10,7 +12,7 @@ export default class UserService {
     this.userRepository = userRepository;
   }
 
-  async createUser(data: CreateUserDto): Promise<UserResponseDto> {
+  async createUser(data: CreateUserDto) {
     // 이메일 중복 검사
     const existingUser = await this.userRepository.findByEmail(data.email);
     if (existingUser) {
@@ -26,11 +28,78 @@ export default class UserService {
       email: data.email,
       password: hashedPassword,
       type: data.type,
-      points: 0,
       grade: { connect: { id: 'grade_green' } },
-      image: 'https://example.com/default.png',
     });
 
-    return newUser;
+    return UserMapper.toUserResponse(newUser);
+  }
+
+  async getUser(userId: string) {
+    const user = await this.userRepository.getUserById(userId);
+    if (!user) {
+      throw new NotFoundError('유저를 찾을 수 없습니다.');
+    }
+    return UserMapper.toUserResponse(user);
+  }
+
+  async updateUser(userId: string, data: UpdateUserDto) {
+    // 유저 조회
+    const user = await this.userRepository.getUserById(userId);
+    if (!user) {
+      throw new NotFoundError('유저를 찾을 수 없습니다.');
+    }
+
+    const { currentPassword, ...updateData } = data;
+
+    // 기존 비밀번호 검증
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      throw new UnauthorizedError('현재 비밀번호가 올바르지 않습니다.');
+    }
+
+    // 새 비밀번호 해싱
+    if (updateData.password) {
+      updateData.password = await bcrypt.hash(updateData.password, 10);
+    }
+
+    const updatedUser = await this.userRepository.updateUser(userId, updateData);
+
+    return UserMapper.toUserResponse(updatedUser);
+  }
+
+  async getUserLikedStores(userId: string) {
+    const likedStores = await this.userRepository.getUserLikedStores(userId);
+
+    if (!likedStores || likedStores.length === 0) {
+      throw new NotFoundError('관심 스토어가 없습니다.');
+    }
+
+    return likedStores.map((like) => ({
+      storeId: like.storeId,
+      userId: like.userId,
+      store: {
+        id: like.store.id,
+        name: like.store.name,
+        createdAt: like.store.createdAt,
+        updatedAt: like.store.updatedAt,
+        userId: like.store.userId,
+        address: like.store.address,
+        detailAddress: like.store.detailAddress,
+        phoneNumber: like.store.phoneNumber,
+        content: like.store.content,
+        image: like.store.image,
+      },
+    }));
+  }
+
+  async deleteUser(userId: string) {
+    const user = await this.userRepository.getUserById(userId);
+    if (!user) {
+      throw new NotFoundError('유저를 찾을 수 없습니다.');
+    }
+
+    await this.userRepository.deleteUser(userId);
+
+    return { message: '회원 탈퇴가 완료되었습니다.' };
   }
 }
