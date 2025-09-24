@@ -8,7 +8,7 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
     const userId = req.user?.id as string;
     const data = req.body;
     const product = await productService.createProduct(userId, data);
-    res.status(200).json(product);
+    res.status(201).json(product);
   } catch (error) {
     next(error);
   }
@@ -87,7 +87,7 @@ export const postProductInquiry = async (req: Request, res: Response, next: Next
     const productId = req.params.productId!;
     const data = req.body;
     const postInquiry = await productService.postProductInquiry(userId, productId, data);
-    res.status(200).json(postInquiry);
+    res.status(201).json(postInquiry);
   } catch (error) {
     next(error);
   }

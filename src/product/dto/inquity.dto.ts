@@ -1,6 +1,6 @@
 import { Transform } from 'class-transformer';
 import { IsNotEmpty, IsOptional, IsString, IsBoolean } from 'class-validator';
-
+import { InquiryStatus } from '@prisma/client';
 export class CreateInquiryDto {
   @IsString()
   @IsNotEmpty()
@@ -22,7 +22,7 @@ export interface InquiryResponse {
   productId: string;
   title: string;
   content: string;
-  status: 'CompletedAnswer' | 'WaitingAnswer';
+  status: InquiryStatus;
   isSecret: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -33,7 +33,7 @@ export interface InquiriesResponse {
   userId: string;
   title: string;
   content: string;
-  status: 'CompletedAnswer' | 'WaitingAnswer';
+  status: InquiryStatus;
   isSecret: boolean;
   createdAt: Date;
   updatedAt: Date;
