@@ -11,7 +11,6 @@ import {
 } from './dto/product.dto';
 import { Prisma } from '@prisma/client';
 import { CreateInquiryDto, InquiriesResponse, InquiryResponse } from './dto/inquity.dto';
-import { getProductInquiry } from './product.controller';
 
 export const productService = {
   // 상품 등록
