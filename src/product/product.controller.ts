@@ -8,7 +8,7 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
     const userId = req.user?.id as string;
     const data = req.body;
     const product = await productService.createProduct(userId, data);
-    res.status(200).json(product);
+    res.status(201).json(product);
   } catch (error) {
     next(error);
   }
@@ -74,6 +74,31 @@ export const deleteProduct = async (req: Request, res: Response, next: NextFunct
     const productId = req.params.productId!;
     const deleteProduct = await productService.deleteProduct(userId, productId);
     res.status(204).send(deleteProduct);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 상품 문의 등록
+
+export const postProductInquiry = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user?.id as string;
+    const productId = req.params.productId!;
+    const data = req.body;
+    const postInquiry = await productService.postProductInquiry(userId, productId, data);
+    res.status(201).json(postInquiry);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 상품 문의 조회
+export const getProductInquiry = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const productId = req.params.productId!;
+    const getProductInquiry = await productService.getProductInquiries(productId);
+    res.status(200).json(getProductInquiry);
   } catch (error) {
     next(error);
   }

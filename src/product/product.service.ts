@@ -10,6 +10,7 @@ import {
   ReviewDto,
 } from './dto/product.dto';
 import { Prisma } from '@prisma/client';
+import { CreateInquiryDto, InquiriesResponse, InquiryResponse } from './dto/inquity.dto';
 
 export const productService = {
   // 상품 등록
@@ -337,5 +338,61 @@ export const productService = {
 
     const deleteProduct = await productRepository.delete(productId);
     return deleteProduct;
+  },
+
+  // 상품 문의 등록
+  async postProductInquiry(
+    userId: string,
+    productId: string,
+    data: CreateInquiryDto
+  ): Promise<InquiryResponse> {
+    const product = await productRepository.findByProductId(productId);
+    if (!product) {
+      throw new NotFoundError();
+    }
+    const { title, content, isSecret } = data;
+    if (!title || !content) {
+      throw new BadRequestError();
+    }
+    const inquiry = await productRepository.createInquiry(userId, productId, {
+      title,
+      content,
+      isSecret,
+    });
+    return inquiry;
+  },
+
+  // 상품 문의 목록조회
+  async getProductInquiries(productId: string): Promise<InquiriesResponse[]> {
+    const product = await productRepository.findByProductId(productId);
+    if (!product) {
+      throw new NotFoundError();
+    }
+    const list = await productRepository.getInquiries(productId);
+    return list.map((inq) => ({
+      id: inq.id,
+      userId: inq.userId,
+      productId: inq.productId,
+      title: inq.title,
+      content: inq.content,
+      status: inq.status,
+      isSecret: inq.isSecret,
+      createdAt: inq.createdAt,
+      updatedAt: inq.updatedAt,
+      user: {
+        name: inq.user.name,
+      },
+      reply: inq.InquiryReply
+        ? {
+            id: inq.InquiryReply.id,
+            content: inq.InquiryReply.content,
+            createdAt: inq.InquiryReply.createdAt,
+            updatedAt: inq.InquiryReply.updatedAt,
+            user: {
+              name: inq.InquiryReply.user.name,
+            },
+          }
+        : null,
+    }));
   },
 };
