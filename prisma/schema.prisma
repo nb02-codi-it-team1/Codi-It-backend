@@ -91,12 +91,12 @@ model Product {
   isSoldOut         Boolean   @default(false)
   categoryId        String?
 
-  store    Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  store    Store      @relation(fields: [storeId], references: [id], onDelete: Cascade)
   CartItem CartItem[]
   Review   Review[]
   Stock    Stock[]
   Inquiry  Inquiry[]
-  Category Category? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  Category Category?  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   @@index([name])
 }
@@ -231,13 +231,21 @@ model InquiryReply {
   user    User    @relation(fields: [userId], references: [id])
 }
 
+enum NotificationType {
+  BUYER_SOLD_OUT
+  BUYER_INQUIRY_ANSWERED
+  SELLER_SOLD_OUT
+  SELLET_NEW_INQUIRY
+}
+
 model Notification {
-  id        String   @id @default(cuid())
+  id        String           @id @default(cuid())
   userId    String
   content   String
-  isChecked Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  type      NotificationType
+  isChecked Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
 
   user User @relation(fields: [userId], references: [id])
 }
@@ -253,8 +261,8 @@ model Size {
 }
 
 model Category {
-  id        String @id @default(cuid())
-  name      String @unique
+  id   String @id @default(cuid())
+  name String @unique
 
   product Product[]
 }
