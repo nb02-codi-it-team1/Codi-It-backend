@@ -78,3 +78,28 @@ export const deleteProduct = async (req: Request, res: Response, next: NextFunct
     next(error);
   }
 };
+
+// 상품 문의 등록
+
+export const postProductInquiry = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user?.id as string;
+    const productId = req.params.productId!;
+    const data = req.body;
+    const postInquiry = await productService.postProductInquiry(userId, productId, data);
+    res.status(200).json(postInquiry);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 상품 문의 조회
+export const getProductInquiry = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const productId = req.params.productId!;
+    const getProductInquiry = await productService.getProductInquiries(productId);
+    res.status(200).json(getProductInquiry);
+  } catch (error) {
+    next(error);
+  }
+};
