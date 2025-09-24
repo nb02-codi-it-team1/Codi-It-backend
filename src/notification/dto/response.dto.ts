@@ -1,5 +1,5 @@
 import { Expose } from 'class-transformer';
-import { IsDateString, IsNotEmpty, IsString } from 'class-validator';
+import { IsBoolean, IsDateString, IsNotEmpty, IsString } from 'class-validator';
 
 export class NotificationResponseDto {
   @IsNotEmpty()
@@ -10,7 +10,7 @@ export class NotificationResponseDto {
   @IsNotEmpty()
   @IsString()
   @Expose()
-  userid: string;
+  userId: string;
 
   @IsNotEmpty()
   @IsString()
@@ -18,7 +18,7 @@ export class NotificationResponseDto {
   content: string;
 
   @IsNotEmpty()
-  @IsString()
+  @IsBoolean()
   @Expose()
   isChecked: boolean;
 

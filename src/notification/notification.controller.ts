@@ -33,7 +33,7 @@ export class NotificationController {
       return res.status(400).json({ message: 'User ID is required.' });
     }
     try {
-      const notifications = await this.notificationService.getNotification(userId);
+      const notifications = await this.notificationService.getNotifications(userId);
       const notificationsResponse = plainToInstance(NotificationResponseDto, notifications, {
         excludeExtraneousValues: true,
       });
