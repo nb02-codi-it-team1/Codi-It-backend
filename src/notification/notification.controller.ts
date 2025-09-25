@@ -47,11 +47,8 @@ export class NotificationController {
       return res.status(400).json({ message: 'Alarm ID is required.' });
     }
     try {
-      const checkedNotification = await this.notificationService.checkNotification(alarmId);
-      const ckNotificationResponse = plainToInstance(NotificationResponseDto, checkedNotification, {
-        excludeExtraneousValues: true,
-      });
-      res.status(200).json(ckNotificationResponse);
+      await this.notificationService.checkNotification(alarmId);
+      res.status(200).send();
     } catch (error) {
       return next(error);
     }

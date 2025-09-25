@@ -52,10 +52,9 @@ export class NotificationService {
     return plainToInstance(NotificationResponseDto, notificationList);
   }
 
-  async checkNotification(id: string): Promise<NotificationResponseDto> {
-    const checkNotification = await this.notificationRepository.updateNotification(id, {
+  async checkNotification(id: string): Promise<void> {
+    await this.notificationRepository.updateNotification(id, {
       isChecked: true,
     });
-    return plainToInstance(NotificationResponseDto, checkNotification);
   }
 }
