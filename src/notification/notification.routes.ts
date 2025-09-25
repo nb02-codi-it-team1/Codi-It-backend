@@ -15,8 +15,6 @@ const NotificationRouter = (prisma: PrismaClient): Router => {
   router.get('/', notificationController.getNotifications);
   router.patch('/:alarmId/check', notificationController.checkNotification);
 
-  router.post('/trigger', notificationController.triggerNotification);
-
   return router;
 };
 
