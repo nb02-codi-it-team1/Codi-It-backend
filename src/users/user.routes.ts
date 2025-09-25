@@ -7,6 +7,7 @@ import validateDto from '../common/utils/validate.dto';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import passport from 'passport';
+import { upload } from '../middleware/s3-upload';
 
 const router = Router();
 const userRepository = new UserRepository(prisma);
@@ -20,8 +21,9 @@ router.get('/me', passport.authenticate('jwt', { session: false }), userControll
 // 내 정보 수정
 router.patch(
   '/me',
-  validateDto(UpdateUserDto),
   passport.authenticate('jwt', { session: false }),
+  upload.single('image'),
+  validateDto(UpdateUserDto),
   userController.updateUser
 );
 // 관심 스토어 조회
