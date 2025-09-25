@@ -47,7 +47,13 @@ export default class UserController {
       if (!userId) {
         throw new NotFoundError('유저를 찾을 수 없습니다.');
       }
+
+      if (req.file) {
+        req.body.image = req.file.location;
+      }
+
       const data: UpdateUserDto = req.body;
+
       const response = await this.userService.updateUser(userId, data);
 
       res.status(200).json(response);

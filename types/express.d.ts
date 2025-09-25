@@ -6,5 +6,7 @@ declare namespace Express {
       email: string;
       type: 'SELLER' | 'BUYER';
     };
+
+    file?: Express.MulterS3.File;
   }
 }
