@@ -35,6 +35,7 @@ export class NotificationService {
       },
       type: dto.type,
       content: dto.content,
+      size: dto.size,
     });
 
     const data = JSON.stringify(newNotification);

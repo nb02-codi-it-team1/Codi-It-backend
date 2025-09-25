@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { NotificationService } from './notification.service';
 import { plainToInstance } from 'class-transformer';
 import { NotificationResponseDto } from './dto/response.dto';
+import { BadRequestError } from 'src/common/errors/error-type';
 
 export class NotificationController {
   private readonly notificationService: NotificationService;
@@ -28,7 +29,7 @@ export class NotificationController {
     const { userId } = req.query;
 
     if (!userId || typeof userId !== 'string') {
-      return res.status(400).json({ message: 'User ID is required.' });
+      throw new BadRequestError('User ID is required.');
     }
     try {
       const notifications = await this.notificationService.getNotifications(userId);

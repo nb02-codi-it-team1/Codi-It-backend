@@ -431,7 +431,7 @@ export const productService = {
     if (sellerId) {
       const sellerDto: CreateNotificationDto = {
         content: `${product.name}에 새로운 문의가 등록되었습니다.`,
-        type: NotificationType.SELLET_NEW_INQUIRY,
+        type: NotificationType.SELLER_NEW_INQUIRY,
       };
       notificationService.createAndSendNotification(sellerId, sellerDto);
     }
