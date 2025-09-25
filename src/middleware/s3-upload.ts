@@ -13,7 +13,7 @@ import {
 } from '../common/constants';
 
 // 사용 가능한 파일 타입
-const ALLOWED_MIME_TYPES = ['image/png', 'image/jpeg', 'image/jpg'];
+const ALLOWED_MIME_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
 
 // 파일 사이즈 제한 (5MB)
 const FILE_SIZE_LIMIT = 5 * 1024 * 1024;
