@@ -1,5 +1,5 @@
 import { NotificationType } from '@prisma/client';
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateNotificationDto {
   @IsNotEmpty()
@@ -9,4 +9,8 @@ export class CreateNotificationDto {
   @IsNotEmpty()
   @IsEnum(NotificationType)
   type: NotificationType;
+
+  @IsOptional()
+  @IsString()
+  size?: string;
 }

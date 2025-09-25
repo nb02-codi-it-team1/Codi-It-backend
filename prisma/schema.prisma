@@ -21,7 +21,7 @@ model User {
   email     String   @unique @db.VarChar(100)
   password  String   @db.VarChar(255)
   image     String?  @default("https://example.com/default.png") // 추후 기본값 수정
-  points    Int     @default(0)
+  points    Int      @default(0)
   type      UserType
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -222,7 +222,7 @@ enum InquiryStatus {
 model InquiryReply {
   id        String   @id @default(cuid())
   inquiryId String   @unique
-  userId    String   
+  userId    String
   content   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -234,6 +234,7 @@ model InquiryReply {
 enum NotificationType {
   BUYER_SOLD_OUT
   BUYER_INQUIRY_ANSWERED
+  BUYER_RESTOCKED
   SELLER_SOLD_OUT
   SELLET_NEW_INQUIRY
 }
@@ -243,6 +244,7 @@ model Notification {
   userId    String
   content   String
   type      NotificationType
+  size      String?
   isChecked Boolean          @default(false)
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
