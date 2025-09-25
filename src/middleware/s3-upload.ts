@@ -52,7 +52,7 @@ export const upload = multer({
 });
 
 // 업로드 컨트롤러
-export async function uploadImage(req: Request, res: Response) {
+export function uploadImage(req: Request, res: Response) {
   if (!req.file) {
     throw new BadRequestError('업로드할 파일이 필요합니다.');
   }
