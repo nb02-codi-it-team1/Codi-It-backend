@@ -88,7 +88,7 @@ jobs:
           PR_TITLE="${{ github.event.pull_request.title }}"
           PR_URL="${{ github.event.pull_request.html_url }}"
 
-          MSG="✅ PR 머지 완료: **${PR_TITLE}**\n${PR_URL}"
+          MSG="✅ PR 머지 완료: **${PR_TITLE}**\n<${PR_URL}>"
 
           curl -X POST "$DISCORD_WEBHOOK_URL" \
             -H "Content-Type: application/json" \
@@ -105,7 +105,7 @@ jobs:
           PR_URL="${{ github.event.pull_request.html_url }}"
           REVIEWER="${{ github.event.review.user.login }}"
 
-          MSG="👍 **${REVIEWER}** 님이 PR을 승인했습니다: **${PR_TITLE}**\n${PR_URL}"
+          MSG="👍 **${REVIEWER}** 님이 PR을 승인했습니다: **${PR_TITLE}**\n<${PR_URL}>"
 
           curl -X POST "$DISCORD_WEBHOOK_URL" \
             -H "Content-Type: application/json" \
