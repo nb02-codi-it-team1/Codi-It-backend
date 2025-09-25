@@ -9,8 +9,15 @@ import {
   ProductListResponse,
   ReviewDto,
 } from './dto/product.dto';
-import { Prisma } from '@prisma/client';
+import { NotificationType, Prisma, PrismaClient } from '@prisma/client';
 import { CreateInquiryDto, InquiriesResponse, InquiryResponse } from './dto/inquity.dto';
+import { NotificationRepository } from 'src/notification/notification.repository';
+import { NotificationService } from 'src/notification/notification.service';
+import { CreateNotificationDto } from 'src/notification/dto/create.dto';
+
+const prisma = new PrismaClient();
+const notificationRepository = new NotificationRepository(prisma);
+const notificationService = new NotificationService(notificationRepository);
 
 export const productService = {
   // 상품 등록
@@ -196,10 +203,12 @@ export const productService = {
     if (!seller) {
       throw new BadRequestError();
     }
-    const product = await productRepository.findByProductId(productId);
+    const product = await productRepository.findById(productId);
     if (!product) {
       throw new NotFoundError();
     }
+
+    const previousStocks = product.Stock;
 
     let categoryConnect = undefined;
     if (body.categoryName) {
@@ -224,6 +233,63 @@ export const productService = {
       quantity: s.quantity,
     }));
     const updatedProduct = await productRepository.updateWithStocks(productId, data, stocks);
+
+    /*
+     * notification 추가
+     * 사이즈별 품절 알림
+     * 품절 상태 변경 확인
+     * 품절이 아니었으나 품절되었다면 알림 전송
+     */
+
+    // --- 알람 로직 시작 ---
+    const sellerId = seller.id;
+
+    for (const updatedStock of updatedProduct.Stock) {
+      // 이전에는 재고가 있었으나 이후에 0이 된 경우에만 알람을 보내도록 설정
+      const previousStock = previousStocks.find((s) => s.sizeId === updatedStock.sizeId);
+      if (previousStock && previousStock.quantity > 0 && updatedStock.quantity === 0) {
+        const sizeName = updatedStock.size.name;
+
+        const usersToNotify = await productRepository.findUsersWithProductAndSizeInCart(
+          productId,
+          updatedStock.sizeId
+        );
+
+        for (const buyerId of usersToNotify) {
+          const buyerDto: CreateNotificationDto = {
+            content: `장바구니에 담은 상품 '${updatedProduct.name} (${sizeName})'이 품절되었습니다.`,
+            type: NotificationType.BUYER_SOLD_OUT,
+            size: sizeName,
+          };
+          notificationService.createAndSendNotification(buyerId, buyerDto);
+        }
+
+        const sellerDto: CreateNotificationDto = {
+          content: `${updatedProduct.name}의 ${sizeName}사이즈가 품절되었습니다.`,
+          type: NotificationType.SELLER_SOLD_OUT,
+          size: sizeName,
+        };
+        notificationService.createAndSendNotification(sellerId, sellerDto);
+      }
+
+      if (previousStock && previousStock.quantity === 0 && updatedStock.quantity > 0) {
+        const sizeName = updatedStock.size.name;
+        const usersToNotify = await productRepository.findUsersWithProductAndSizeInCart(
+          productId,
+          updatedStock.sizeId
+        );
+
+        for (const buyerId of usersToNotify) {
+          const buyerDto: CreateNotificationDto = {
+            content: `상품 '${updatedProduct.name} (${sizeName})'이 재입고 되었습니다.`,
+            type: NotificationType.BUYER_RESTOCKED,
+            size: sizeName,
+          };
+          notificationService.createAndSendNotification(buyerId, buyerDto);
+        }
+      }
+    }
+    // --- 알람 로직 종료 ---
 
     return {
       id: updatedProduct.id,
@@ -359,6 +425,18 @@ export const productService = {
       content,
       isSecret,
     });
+
+    // --- 알림 로직 시작 ---
+    const sellerId = await productRepository.findSellerIdByProductId(productId);
+    if (sellerId) {
+      const sellerDto: CreateNotificationDto = {
+        content: `${product.name}에 새로운 문의가 등록되었습니다.`,
+        type: NotificationType.SELLET_NEW_INQUIRY,
+      };
+      notificationService.createAndSendNotification(sellerId, sellerDto);
+    }
+    // --- 알림 로직 종료 ---
+
     return inquiry;
   },
 
