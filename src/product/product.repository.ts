@@ -128,4 +128,36 @@ export const productRepository = {
       },
     });
   },
+  findUsersWithProductAndSizeInCart: async (productId: string, sizeId: number) => {
+    const cartItems = await prisma.cartItem.findMany({
+      where: {
+        productId: productId,
+        sizeId: sizeId,
+      },
+      include: {
+        cart: {
+          select: {
+            buyerId: true, // buyerId만 선택
+          },
+        },
+      },
+    });
+    const userIds = cartItems.map((item) => item.cart.buyerId);
+    const uniqueUserIds = [...new Set(userIds)];
+
+    return uniqueUserIds;
+  },
+  findSellerIdByProductId: async (productId: string) => {
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+      include: {
+        store: {
+          select: {
+            userId: true,
+          },
+        },
+      },
+    });
+    return product?.store?.userId || null;
+  },
 };
