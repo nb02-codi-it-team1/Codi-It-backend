@@ -3,6 +3,7 @@ import { NotificationRepository } from './notification.repository';
 import { NotificationService } from './notification.service';
 import { NotificationController } from './notification.controller';
 import { PrismaClient } from '@prisma/client';
+import passport from 'passport';
 
 const NotificationRouter = (prisma: PrismaClient): Router => {
   const router = Router();
@@ -11,9 +12,21 @@ const NotificationRouter = (prisma: PrismaClient): Router => {
   const notificationService = new NotificationService(notificationRepository);
   const notificationController = new NotificationController(notificationService);
 
-  router.get('/sse', notificationController.sseConnect);
-  router.get('/', notificationController.getNotifications);
-  router.patch('/:alarmId/check', notificationController.checkNotification);
+  router.get(
+    '/sse',
+    passport.authenticate('jwt', { session: false }),
+    notificationController.sseConnect
+  );
+  router.get(
+    '/',
+    passport.authenticate('jwt', { session: false }),
+    notificationController.getNotifications
+  );
+  router.patch(
+    '/:alarmId/check',
+    passport.authenticate('jwt', { session: false }),
+    notificationController.checkNotification
+  );
 
   return router;
 };
