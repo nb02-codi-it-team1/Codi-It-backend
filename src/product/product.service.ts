@@ -10,7 +10,7 @@ import {
   ReviewDto,
 } from './dto/product.dto';
 import { NotificationType, Prisma, PrismaClient } from '@prisma/client';
-import { CreateInquiryDto, InquiriesResponse, InquiryResponse } from './dto/inquity.dto';
+import { CreateInquiryDto, InquiriesResponse, InquiryResponse } from './dto/inquiry.dto';
 import { NotificationRepository } from 'src/notification/notification.repository';
 import { NotificationService } from 'src/notification/notification.service';
 import { CreateNotificationDto } from 'src/notification/dto/create.dto';

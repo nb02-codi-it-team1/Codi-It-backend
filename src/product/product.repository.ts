@@ -1,6 +1,6 @@
 import prisma from 'src/common/prisma/client';
 import { InquiryStatus, Prisma } from '@prisma/client';
-import { CreateInquiryDto } from './dto/inquity.dto';
+import { CreateInquiryDto } from './dto/inquiry.dto';
 export const productRepository = {
   create: (data: Prisma.ProductCreateInput) =>
     prisma.product.create({
