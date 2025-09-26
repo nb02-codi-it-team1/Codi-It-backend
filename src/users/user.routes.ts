@@ -7,7 +7,7 @@ import validateDto from '../common/utils/validate.dto';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import passport from 'passport';
-import { upload } from '../middleware/s3-upload';
+import { s3Upload, mapFileToBody } from '../middleware/s3-upload';
 
 const router = Router();
 const userRepository = new UserRepository(prisma);
@@ -22,7 +22,8 @@ router.get('/me', passport.authenticate('jwt', { session: false }), userControll
 router.patch(
   '/me',
   passport.authenticate('jwt', { session: false }),
-  upload.single('image'),
+  s3Upload.single('image'),
+  mapFileToBody,
   validateDto(UpdateUserDto),
   userController.updateUser
 );
