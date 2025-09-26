@@ -6,7 +6,7 @@ import StoreController from './stores.controller';
 import validateDto from '../common/utils/validate.dto';
 import { CreateStoreDto } from './dtos/create.dto';
 import { UpdateStoreDto } from './dtos/update.dto';
-import upload from '../middleware/upload';
+import { s3Upload, mapFileToBody } from '../middleware/s3-upload';
 import passport from 'passport';
 import { authorizeSeller } from '../middleware/authorization';
 
@@ -21,7 +21,8 @@ const StoresRouter = (prisma: PrismaClient): Router => {
     '/',
     passport.authenticate('jwt', { session: false }),
     authorizeSeller,
-    upload.single('image'),
+    s3Upload.single('image'),
+    mapFileToBody,
     validateDto(CreateStoreDto),
     storeController.createStore
   );
@@ -29,7 +30,8 @@ const StoresRouter = (prisma: PrismaClient): Router => {
     '/:storeId',
     passport.authenticate('jwt', { session: false }),
     authorizeSeller,
-    upload.single('image'),
+    s3Upload.single('image'),
+    mapFileToBody,
     validateDto(UpdateStoreDto),
     storeController.updateStore
   );
