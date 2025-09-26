@@ -12,15 +12,18 @@ import {
 } from './product.controller';
 import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
 import { authorizeBuyer, authorizeSeller } from 'src/middleware/authorization';
+import { s3Upload, mapFileToBody } from '../middleware/s3-upload';
 
 const router = Router();
 
 // 상품 등록
 router.post(
   '/',
-  validateDto(CreateProductDto),
   passport.authenticate('jwt', { session: false }),
   authorizeSeller,
+  s3Upload.single('image'),
+  mapFileToBody,
+  validateDto(CreateProductDto),
   createProduct
 );
 
@@ -33,9 +36,11 @@ router.get('/:productId', getProductDetail);
 // 상품 수정
 router.patch(
   '/:productId',
-  validateDto(UpdateProductDto),
   passport.authenticate('jwt', { session: false }),
   authorizeSeller,
+  s3Upload.single('image'),
+  mapFileToBody,
+  validateDto(UpdateProductDto),
   updateProduct
 );
 

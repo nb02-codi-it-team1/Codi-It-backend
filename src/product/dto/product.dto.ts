@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Type, Transform, plainToInstance } from 'class-transformer';
 import {
   IsArray,
   IsDate,
@@ -94,6 +94,18 @@ export class CreateProductDto {
   @ValidateNested({ each: true })
   @IsNotEmpty({ message: '상품이름은 필수 입력 항목입니다.' })
   @Type(() => StocksDto)
+  @Transform(({ value }): StocksDto[] => {
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        // 배열이면 StocksDto로 매핑
+        return Array.isArray(parsed) ? plainToInstance(StocksDto, parsed) : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  })
   stocks: StocksDto[];
 }
 
@@ -139,6 +151,19 @@ export class UpdateProductDto {
 
   @IsArray({ message: 'stocks는 배열이어야 합니다.' })
   @ValidateNested({ each: true })
+  @Type(() => StocksDto)
+  @Transform(({ value }): StocksDto[] => {
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        // 배열이면 StocksDto로 매핑
+        return Array.isArray(parsed) ? plainToInstance(StocksDto, parsed) : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  })
   stocks?: StocksDto[];
 }
 
