@@ -9,16 +9,35 @@ export const inquiryRepository = {
     params: { skip: number; take: number; status: InquiryStatus }
   ) => {
     return prisma.inquiry.findMany({
-      where: {
-        userId,
-        status: params.status,
-      },
+      where: { userId, status: params.status },
       skip: params.skip,
       take: params.take,
       orderBy: { createdAt: 'desc' },
-      include: {
-        product: { include: { store: true } },
-        user: { select: { name: true } },
+      select: {
+        id: true,
+        title: true,
+        isSecret: true,
+        status: true,
+        content: true,
+        createdAt: true,
+        product: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            store: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+        user: {
+          select: {
+            name: true,
+          },
+        },
       },
     });
   },
