@@ -8,10 +8,13 @@ import { BadRequestError } from 'src/common/errors/error-type';
 export const getMyInquiries = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = req.user?.id as string;
+
+    const status = req.query.status as InquiryStatus | undefined;
+
     const params: getMyInquiriesParams = {
       page: req.query.page ? Number(req.query.page) : 1,
       pageSize: req.query.pageSize ? Number(req.query.pageSize) : 16,
-      status: (req.query.status ? req.query.status : 'WaitingAnswer') as InquiryStatus,
+      status,
     };
     const myInquiries = await inquiryService.getMyInquiries(userId, params);
     res.status(200).json(myInquiries);
