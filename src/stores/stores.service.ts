@@ -17,11 +17,7 @@ export default class StoreService {
     this.storeRepository = storeRepository;
   }
 
-  async createStore(
-    userId: string,
-    data: CreateStoreDto,
-    file?: Express.Multer.File
-  ): Promise<StoreResponseDto> {
+  async createStore(userId: string, data: CreateStoreDto): Promise<StoreResponseDto> {
     const trimmedName = data.name.trim();
     const existingStore = await this.storeRepository.findByName(trimmedName);
     if (existingStore) {
@@ -36,9 +32,7 @@ export default class StoreService {
       },
     };
 
-    if (file) {
-      storeInfo.image = file.path;
-    } else {
+    if (!storeInfo.image) {
       storeInfo.image = 'wwww.sample.png'; // 기본 이미지 설정
     }
     const newStore = await this.storeRepository.createStore(storeInfo);
@@ -49,8 +43,7 @@ export default class StoreService {
   async updateStore(
     storeId: string,
     userId: string,
-    data: UpdateStoreDto,
-    file?: Express.Multer.File
+    data: UpdateStoreDto
   ): Promise<StoreResponseDto> {
     const existingStore = await this.storeRepository.findById(storeId);
     if (!existingStore) {
@@ -63,11 +56,6 @@ export default class StoreService {
     const updateData = { ...data };
     if (updateData.name) {
       updateData.name = updateData.name.trim();
-    }
-
-    if (file) {
-      const newImageUrl = file.path;
-      updateData.image = newImageUrl;
     }
 
     if (updateData.name && updateData.name !== existingStore.name) {

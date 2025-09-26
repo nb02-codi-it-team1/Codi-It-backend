@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import multer from 'multer';
 import multerS3 from 'multer-s3';
 import path from 'path';
@@ -26,7 +26,7 @@ const s3Client = new S3Client({
   },
 });
 
-export const upload = multer({
+export const s3Upload = multer({
   storage: multerS3({
     s3: s3Client,
     bucket: AWS_BUCKET_NAME,
@@ -51,8 +51,16 @@ export const upload = multer({
   },
 });
 
+// Multer 에서 넘긴 req.file의 location을 req.body.image에 매핑
+export function mapFileToBody(req: Request, res: Response, next: NextFunction) {
+  if (req.file) {
+    req.body.image = (req.file as Express.MulterS3.File).location;
+  }
+  next();
+}
+
 // 업로드 컨트롤러
-export function uploadImage(req: Request, res: Response) {
+/* export function uploadImage(req: Request, res: Response) {
   if (!req.file) {
     throw new BadRequestError('업로드할 파일이 필요합니다.');
   }
@@ -60,4 +68,4 @@ export function uploadImage(req: Request, res: Response) {
   const file = req.file as Express.MulterS3.File;
 
   res.send({ url: file.location });
-}
+} */
