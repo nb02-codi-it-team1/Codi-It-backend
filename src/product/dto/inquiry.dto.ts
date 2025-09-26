@@ -31,6 +31,7 @@ export interface InquiryResponse {
 export interface InquiriesResponse {
   id: string;
   userId: string;
+  productId: string;
   title: string;
   content: string;
   status: InquiryStatus;
@@ -42,6 +43,7 @@ export interface InquiriesResponse {
 }
 
 export interface InquiryUser {
+  id?: string;
   name: string;
 }
 
