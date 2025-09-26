@@ -28,6 +28,8 @@ export const globalErrorHandler: ErrorRequestHandler = async (
     createdAt: new Date(),
   });
 
+  console.trace(error);
+
   const response = {
     success: false,
     error: {
