@@ -14,9 +14,11 @@ import { CreateInquiryDto, InquiriesResponse, InquiryResponse } from './dto/inqu
 import { NotificationRepository } from 'src/notification/notification.repository';
 import { NotificationService } from 'src/notification/notification.service';
 import { CreateNotificationDto } from 'src/notification/dto/create.dto';
+import StoreRepository from 'src/stores/stores.repository';
 
 const prisma = new PrismaClient();
 const notificationRepository = new NotificationRepository(prisma);
+const storeRepository = new StoreRepository(prisma);
 const notificationService = new NotificationService(notificationRepository);
 
 export const productService = {
@@ -68,6 +70,9 @@ export const productService = {
         })),
       },
     });
+
+    await storeRepository.updateProductCount(seller.id);
+
     return {
       id: product.id,
       name: product.name,
@@ -401,8 +406,9 @@ export const productService = {
     if (!product) {
       throw new NotFoundError();
     }
-
     const deleteProduct = await productRepository.delete(productId);
+    await storeRepository.updateProductCount(seller.id);
+
     return deleteProduct;
   },
 

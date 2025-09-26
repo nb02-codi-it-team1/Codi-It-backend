@@ -105,6 +105,7 @@ export default class StoreRepository {
       include: { store: true },
     });
   }
+
   async increaseLikeCount(storeId: string) {
     return this.prisma.store.update({
       where: { id: storeId },
@@ -133,6 +134,19 @@ export default class StoreRepository {
       data: {
         favoriteCount: newFavoriteCount,
         monthFavoriteCount: newMonthFavoriteCount,
+      },
+    });
+  }
+
+  async updateProductCount(storeId: string) {
+    const productCount = await this.prisma.product.count({
+      where: { storeId },
+    });
+
+    return this.prisma.store.update({
+      where: { id: storeId },
+      data: {
+        productCount: productCount,
       },
     });
   }
