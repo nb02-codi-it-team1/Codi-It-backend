@@ -13,7 +13,14 @@ import {
   NotFoundError,
   UnauthorizedError,
 } from 'src/common/errors/error-type';
-import { InquiryStatus } from '@prisma/client';
+import { InquiryStatus, NotificationType, PrismaClient } from '@prisma/client';
+import { NotificationRepository } from 'src/notification/notification.repository';
+import { NotificationService } from 'src/notification/notification.service';
+import { CreateNotificationDto } from 'src/notification/dto/create.dto';
+
+const prisma = new PrismaClient();
+const notificationRepository = new NotificationRepository(prisma);
+const notificationService = new NotificationService(notificationRepository);
 
 export const inquiryService = {
   async getMyInquiries(userId: string, params: getMyInquiriesParams): Promise<InquiryList> {
@@ -155,6 +162,15 @@ export const inquiryService = {
       content,
     });
     await inquiryRepository.updateInquiryStatus(inquiryId, 'CompletedAnswer');
+
+    // --- 알림 로직 시작 ---
+    const inquiryDto: CreateNotificationDto = {
+      content: `작성하신 ${inquiry.product.name} 문의에 대한 답변이 등록되었습니다.`,
+      type: NotificationType.BUYER_INQUIRY_ANSWERED,
+    };
+    notificationService.createAndSendNotification(inquiry.userId, inquiryDto);
+
+    /// --- 알림 로직 종료 ---
 
     return {
       id: createReply.id,
