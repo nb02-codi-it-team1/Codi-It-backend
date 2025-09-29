@@ -6,10 +6,10 @@ import { UpdateInquiryDto, CreateOrUpdateInquiryReplyDto } from './dto/inquiry.d
 export const inquiryRepository = {
   findMyInquiryByUserId: (
     userId: string,
-    params: { skip: number; take: number; status: InquiryStatus }
+    params: { skip: number; take: number; status?: InquiryStatus }
   ) => {
     return prisma.inquiry.findMany({
-      where: { userId, status: params.status },
+      where: { userId, ...(params.status ? { status: params.status } : {}) },
       skip: params.skip,
       take: params.take,
       orderBy: { createdAt: 'desc' },
@@ -42,11 +42,11 @@ export const inquiryRepository = {
     });
   },
 
-  countInquiryByUserId: (userId: string, params: { status: InquiryStatus }) => {
+  countInquiryByUserId: (userId: string, params: { status?: InquiryStatus }) => {
     return prisma.inquiry.count({
       where: {
         userId,
-        status: params.status,
+        ...(params.status ? { status: params.status } : {}),
       },
     });
   },
@@ -83,6 +83,13 @@ export const inquiryRepository = {
       },
     });
   },
+  updateInquiryStatus: (inquiryId: string, status: InquiryStatus) => {
+    return prisma.inquiry.update({
+      where: { id: inquiryId },
+      data: { status },
+    });
+  },
+
   findReplyByReplyId: (replyId: string) => {
     return prisma.inquiryReply.findUnique({
       where: { id: replyId },

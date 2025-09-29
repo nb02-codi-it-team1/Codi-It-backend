@@ -21,8 +21,8 @@ export const inquiryService = {
     const take = params.pageSize!;
 
     const [list, totalCount] = await Promise.all([
-      inquiryRepository.findMyInquiryByUserId(userId, { skip, take, status: params.status! }),
-      inquiryRepository.countInquiryByUserId(userId, { status: params.status! }),
+      inquiryRepository.findMyInquiryByUserId(userId, { skip, take, status: params.status }),
+      inquiryRepository.countInquiryByUserId(userId, { status: params.status }),
     ]);
 
     return { list, totalCount };
@@ -154,6 +154,7 @@ export const inquiryService = {
       userId,
       content,
     });
+    await inquiryRepository.updateInquiryStatus(inquiryId, 'CompletedAnswer');
 
     return {
       id: createReply.id,
