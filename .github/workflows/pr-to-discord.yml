@@ -3,9 +3,7 @@ name: pr to discord
 on:
   workflow_dispatch:
   pull_request_target:
-    types: [opened, reopened, ready_for_review, closed]
-  pull_request_review:
-    types: [submitted]
+    types: [opened, reopened, ready_for_review, closed, submitted]
 
 jobs:
   notify-discord:
@@ -95,18 +93,28 @@ jobs:
             -d "{\"content\": \"$MSG\"}"
 
       - name: Notify Discord (approved review)
-        if: github.event_name == 'pull_request_review' && github.event.review.state == 'approved'
+        if: github.event.review.state == 'approved'
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
 
-          # pull_request_review 이벤트에서 안전하게 제목/URL 가져오기
-          PR_TITLE="${{ github.event.pull_request.title || github.event.review.pull_request.title }}"
-          PR_URL="${{ github.event.pull_request.html_url || github.event.review.pull_request.html_url }}"
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          REPO="${{ github.repository }}"
+
+          # PR 상세정보를 GitHub API로 가져오기 (포크 PR 지원)
+          API_RESPONSE=$(gh api repos/$REPO/pulls/$PR_NUMBER)
+          PR_TITLE=$(echo "$API_RESPONSE" | jq -r '.title')
+          PR_URL=$(echo "$API_RESPONSE" | jq -r '.html_url')
 
           REVIEWER="${{ github.event.review.user.login }}"
           MSG="👍 **${REVIEWER}** 님이 PR을 승인했습니다: **${PR_TITLE}**\n<${PR_URL}>"
+
+          if [ -z "$DISCORD_WEBHOOK_URL" ]; then
+            echo "Skipping Discord notification: no webhook URL"
+            exit 0
+          fi
 
           curl -X POST "$DISCORD_WEBHOOK_URL" \
             -H "Content-Type: application/json" \
