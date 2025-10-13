@@ -1,8 +1,8 @@
+import { Decimal } from '@prisma/client/runtime/library';
 import { Expose } from 'class-transformer';
 import {
   IsBoolean,
   IsDateString,
-  IsDecimal,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -27,10 +27,9 @@ export class ProductResponseDto {
   @Expose()
   name: string;
 
-  @IsDecimal()
   @IsNotEmpty()
   @Expose()
-  price: number;
+  price: Decimal;
 
   @IsInt()
   @IsNotEmpty()
