@@ -28,7 +28,7 @@ export const productService = {
     // seller 인지 확인, 스토어 존재여부
     const seller = await productRepository.findSellerByUserId(userId);
     if (!seller) {
-      throw new BadRequestError();
+      throw new NotFoundError();
     }
     const {
       name,
@@ -218,7 +218,7 @@ export const productService = {
     let categoryConnect = undefined;
     if (body.categoryName) {
       const category = await productRepository.findCategoryByName(body.categoryName);
-      if (!category) throw new BadRequestError();
+      if (!category) throw new NotFoundError();
       categoryConnect = { connect: { id: category.id } };
     }
     const data = {
