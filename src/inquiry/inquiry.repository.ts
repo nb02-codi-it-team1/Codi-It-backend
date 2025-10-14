@@ -4,6 +4,64 @@ import { InquiryStatus, Prisma } from '@prisma/client';
 import { UpdateInquiryDto, CreateOrUpdateInquiryReplyDto } from './dto/inquiry.dto';
 
 export const inquiryRepository = {
+  findInquiriesBySellerId: (
+    sellerId: string,
+    params: { skip: number; take: number; status?: InquiryStatus }
+  ) => {
+    return prisma.inquiry.findMany({
+      where: {
+        product: {
+          store: {
+            userId: sellerId, // sellerId 필터링
+          },
+        },
+        ...(params.status ? { status: params.status } : {}),
+      },
+      skip: params.skip,
+      take: params.take,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        title: true,
+        isSecret: true,
+        status: true,
+        content: true,
+        createdAt: true,
+        product: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            store: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+        user: {
+          select: {
+            name: true,
+          },
+        },
+        InquiryReply: {
+          select: {
+            id: true,
+            content: true,
+            createdAt: true,
+            updatedAt: true,
+            user: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  },
+
   findMyInquiryByUserId: (
     userId: string,
     params: { skip: number; take: number; status?: InquiryStatus }
@@ -50,6 +108,20 @@ export const inquiryRepository = {
       },
     });
   },
+
+  countInquiriesBySellerId: (sellerId: string, params: { status?: InquiryStatus }) => {
+    return prisma.inquiry.count({
+      where: {
+        product: {
+          store: {
+            userId: sellerId,
+          },
+        },
+        ...(params.status ? { status: params.status } : {}),
+      },
+    });
+  },
+
   findInquiryByInquiryId: (inquiryId: string) => {
     return prisma.inquiry.findUnique({
       where: { id: inquiryId },

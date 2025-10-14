@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { inquiryService } from './inquiry.service';
-import { InquiryStatus } from '@prisma/client';
+import { InquiryStatus, UserType } from '@prisma/client';
 import { getMyInquiriesParams } from './dto/inquiry.dto';
 import { BadRequestError } from 'src/common/errors/error-type';
 
@@ -8,7 +8,7 @@ import { BadRequestError } from 'src/common/errors/error-type';
 export const getMyInquiries = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = req.user?.id as string;
-
+    const role = req.user?.type as UserType;
     const status = req.query.status as InquiryStatus | undefined;
 
     const params: getMyInquiriesParams = {
@@ -16,7 +16,7 @@ export const getMyInquiries = async (req: Request, res: Response, next: NextFunc
       pageSize: req.query.pageSize ? Number(req.query.pageSize) : 16,
       status,
     };
-    const myInquiries = await inquiryService.getMyInquiries(userId, params);
+    const myInquiries = await inquiryService.getMyInquiries(userId, params, role);
     res.status(200).json(myInquiries);
   } catch (error) {
     next(error);

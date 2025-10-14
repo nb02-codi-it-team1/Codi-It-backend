@@ -13,7 +13,7 @@ import {
   NotFoundError,
   UnauthorizedError,
 } from 'src/common/errors/error-type';
-import { InquiryStatus, NotificationType, PrismaClient } from '@prisma/client';
+import { InquiryStatus, NotificationType, PrismaClient, UserType } from '@prisma/client';
 import { NotificationRepository } from 'src/notification/notification.repository';
 import { NotificationService } from 'src/notification/notification.service';
 import { CreateNotificationDto } from 'src/notification/dto/create.dto';
@@ -23,10 +23,24 @@ const notificationRepository = new NotificationRepository(prisma);
 const notificationService = new NotificationService(notificationRepository);
 
 export const inquiryService = {
-  async getMyInquiries(userId: string, params: getMyInquiriesParams): Promise<InquiryList> {
+  async getMyInquiries(
+    userId: string,
+    params: getMyInquiriesParams,
+    role: UserType
+  ): Promise<InquiryList> {
     const skip = (params.page! - 1) * params.pageSize!;
     const take = params.pageSize!;
 
+    // seller
+    if (role === 'SELLER') {
+      const [list, totalCount] = await Promise.all([
+        inquiryRepository.findInquiriesBySellerId(userId, { skip, take, status: params.status }),
+        inquiryRepository.countInquiriesBySellerId(userId, { status: params.status }),
+      ]);
+
+      return { list, totalCount };
+    }
+    // buyer
     const [list, totalCount] = await Promise.all([
       inquiryRepository.findMyInquiryByUserId(userId, { skip, take, status: params.status }),
       inquiryRepository.countInquiryByUserId(userId, { status: params.status }),
@@ -34,7 +48,6 @@ export const inquiryService = {
 
     return { list, totalCount };
   },
-
   async getDetailInquiry(userId: string, inquiryId: string): Promise<InquiriesResponse> {
     const inquiry = await inquiryRepository.findInquiryByInquiryId(inquiryId);
     if (!inquiry) {
