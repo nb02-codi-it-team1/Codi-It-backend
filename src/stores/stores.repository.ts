@@ -94,7 +94,7 @@ export default class StoreRepository {
     });
   }
 
-  async deleteStroeLike(userId: string, storeId: string) {
+  async deleteStoreLike(userId: string, storeId: string) {
     return this.prisma.storeLike.delete({
       where: {
         userId_storeId: {
@@ -117,23 +117,11 @@ export default class StoreRepository {
   }
 
   async decreaseLikeCount(storeId: string) {
-    const store = await this.prisma.store.findUnique({
-      where: { id: storeId },
-      select: { favoriteCount: true, monthFavoriteCount: true },
-    });
-
-    if (!store) {
-      return;
-    }
-
-    const newFavoriteCount = Math.max(0, (store.favoriteCount || 0) - 1);
-    const newMonthFavoriteCount = Math.max(0, (store.monthFavoriteCount || 0) - 1);
-
     return this.prisma.store.update({
       where: { id: storeId },
       data: {
-        favoriteCount: newFavoriteCount,
-        monthFavoriteCount: newMonthFavoriteCount,
+        favoriteCount: { decrement: 1 },
+        monthFavoriteCount: { decrement: 1 },
       },
     });
   }
