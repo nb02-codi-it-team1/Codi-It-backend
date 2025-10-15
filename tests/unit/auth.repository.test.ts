@@ -1,5 +1,5 @@
 import { mockDeep, DeepMockProxy } from 'jest-mock-extended';
-import { PrismaClient, Prisma } from '@prisma/client';
+import { PrismaClient, Prisma, UserType } from '@prisma/client';
 import AuthRepository from '../../src/auth/auth.repository';
 
 describe('AuthRepository Unit Test', () => {
@@ -22,7 +22,7 @@ describe('AuthRepository Unit Test', () => {
     password: '$2b$10$hashed',
     image: 'http://example.com/img.png',
     points: 0,
-    type: 'BUYER',
+    type: UserType.BUYER,
     gradeid: 'grade_green',
     createdAt: new Date(),
     updatedAt: new Date(),

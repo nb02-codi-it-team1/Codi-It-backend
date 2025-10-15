@@ -4,6 +4,7 @@ import AuthService from '../../src/auth/auth.service';
 import AuthRepository from '../../src/auth/auth.repository';
 import { NotFoundError, UnauthorizedError } from '../../src/common/errors/error-type';
 import { LoginDto } from '../../src/auth/dtos/login.dto';
+import { UserType } from '@prisma/client';
 
 jest.mock('../../src/auth/jwt', () => ({
   generateAccessToken: jest.fn(),
@@ -35,7 +36,7 @@ describe('AuthService Unit Test', () => {
     password: '$2b$10$hashed',
     image: 'http://example.com/img.png',
     points: 0,
-    type: 'SELLER' as const,
+    type: UserType.BUYER,
     gradeid: 'grade_green',
     createdAt: new Date(),
     updatedAt: new Date(),
