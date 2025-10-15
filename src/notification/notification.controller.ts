@@ -26,7 +26,7 @@ export class NotificationController {
   };
 
   getNotifications = async (req: Request, res: Response, next: NextFunction) => {
-    const { userId } = req.query;
+    const userId = req.user?.id;
 
     if (!userId || typeof userId !== 'string') {
       throw new BadRequestError('User ID is required.');

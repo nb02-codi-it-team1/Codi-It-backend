@@ -42,6 +42,11 @@ export interface InquiriesResponse {
   reply: InquiryReplyResponse | null;
 }
 
+export interface InquiriesListResponse {
+  list: InquiriesResponse[];
+  totalCount: number;
+}
+
 export interface InquiryUser {
   id?: string;
   name: string;

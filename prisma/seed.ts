@@ -81,10 +81,12 @@ async function main() {
     });
   } // <-- for stores 끝
   const sizes = [
-    { name: 'Small', en: 'S', ko: '스몰' },
-    { name: 'Medium', en: 'M', ko: '미디엄' },
-    { name: 'Large', en: 'L', ko: '라지' },
-    { name: 'Extra Large', en: 'XL', ko: '엑스라지' },
+    { id: 1, name: 'xs', ko: '엑스스몰', en: 'XS' },
+    { id: 2, name: 's', ko: '스몰', en: 'S' },
+    { id: 3, name: 'm', ko: '미디엄', en: 'M' },
+    { id: 4, name: 'l', ko: '라지', en: 'L' },
+    { id: 5, name: 'xl', ko: '엑스라지', en: 'XL' },
+    { id: 6, name: 'free', ko: '프리', en: 'FREE' },
   ];
   await prisma.size.createMany({
     data: sizes,

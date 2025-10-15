@@ -10,7 +10,7 @@ import {
   ReviewDto,
 } from './dto/product.dto';
 import { NotificationType, Prisma, PrismaClient } from '@prisma/client';
-import { CreateInquiryDto, InquiriesResponse, InquiryResponse } from './dto/inquiry.dto';
+import { CreateInquiryDto, InquiriesListResponse, InquiryResponse } from './dto/inquiry.dto';
 import { NotificationRepository } from 'src/notification/notification.repository';
 import { NotificationService } from 'src/notification/notification.service';
 import { CreateNotificationDto } from 'src/notification/dto/create.dto';
@@ -28,7 +28,7 @@ export const productService = {
     // seller 인지 확인, 스토어 존재여부
     const seller = await productRepository.findSellerByUserId(userId);
     if (!seller) {
-      throw new BadRequestError();
+      throw new NotFoundError();
     }
     const {
       name,
@@ -46,7 +46,7 @@ export const productService = {
     }
 
     // categoryName으로 id 찾기
-    const category = await productRepository.findCategoryByName(categoryName);
+    const category = await productRepository.findCategoryByName(categoryName.toUpperCase());
     if (!category) {
       throw new NotFoundError();
     }
@@ -218,7 +218,7 @@ export const productService = {
     let categoryConnect = undefined;
     if (body.categoryName) {
       const category = await productRepository.findCategoryByName(body.categoryName);
-      if (!category) throw new BadRequestError();
+      if (!category) throw new NotFoundError();
       categoryConnect = { connect: { id: category.id } };
     }
     const data = {
@@ -447,36 +447,35 @@ export const productService = {
   },
 
   // 상품 문의 목록조회
-  async getProductInquiries(productId: string): Promise<InquiriesResponse[]> {
+  async getProductInquiries(productId: string): Promise<InquiriesListResponse> {
     const product = await productRepository.findByProductId(productId);
     if (!product) {
       throw new NotFoundError();
     }
     const list = await productRepository.getInquiries(productId);
-    return list.map((inq) => ({
-      id: inq.id,
-      userId: inq.userId,
-      productId: inq.productId,
-      title: inq.title,
-      content: inq.content,
-      status: inq.status,
-      isSecret: inq.isSecret,
-      createdAt: inq.createdAt,
-      updatedAt: inq.updatedAt,
-      user: {
-        name: inq.user.name,
-      },
-      reply: inq.InquiryReply
-        ? {
-            id: inq.InquiryReply.id,
-            content: inq.InquiryReply.content,
-            createdAt: inq.InquiryReply.createdAt,
-            updatedAt: inq.InquiryReply.updatedAt,
-            user: {
-              name: inq.InquiryReply.user.name,
-            },
-          }
-        : null,
-    }));
+    return {
+      list: list.map((inq) => ({
+        id: inq.id,
+        userId: inq.userId,
+        productId: inq.productId,
+        title: inq.title,
+        content: inq.content,
+        status: inq.status,
+        isSecret: inq.isSecret,
+        createdAt: inq.createdAt,
+        updatedAt: inq.updatedAt,
+        user: { name: inq.user.name },
+        reply: inq.InquiryReply
+          ? {
+              id: inq.InquiryReply.id,
+              content: inq.InquiryReply.content,
+              createdAt: inq.InquiryReply.createdAt,
+              updatedAt: inq.InquiryReply.updatedAt,
+              user: { name: inq.InquiryReply.user.name },
+            }
+          : null,
+      })),
+      totalCount: list.length,
+    };
   },
 };
