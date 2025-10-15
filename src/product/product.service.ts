@@ -133,7 +133,7 @@ export const productService = {
       };
     }
     if (favoriteStore) where.storeId = favoriteStore;
-    if (categoryName) where.Category = { name: categoryName };
+    if (categoryName) where.Category = { name: categoryName.toUpperCase() };
 
     // 🔹 정렬 조건(orderBy)
     let orderBy: Prisma.ProductOrderByWithRelationInput = {};
