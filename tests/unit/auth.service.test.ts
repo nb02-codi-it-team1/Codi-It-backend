@@ -43,6 +43,10 @@ describe('AuthService Unit Test', () => {
     grade,
   };
 
+  beforeAll(() => {
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
   beforeEach(() => {
     userRepository = mock<AuthRepository>();
     authService = new AuthService(userRepository);
