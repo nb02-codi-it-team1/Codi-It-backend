@@ -56,7 +56,7 @@
     "prisma/**/*.ts",
     "types/**/*",
     "reset-monthly-count.ts"
- ],
+, "tests" ],
   "exclude": [
     "node_modules"
   ]

@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { Decimal, InquiryStatus, UserType } from '@prisma/client';
-import { productService } from '../product.service';
-import { productRepository } from '../product.repository';
+import { productService } from '../../src/product/product.service';
+import { productRepository } from '../../src/product/product.repository';
 import { BadRequestError, NotFoundError } from 'src/common/errors/error-type';
 import {
   CreateProductDto,
@@ -10,11 +10,15 @@ import {
   GetProductsParams,
   ProductListResponse,
   UpdateProductDto,
-} from '../dto/product.dto';
+} from '../../src/product/dto/product.dto';
 import { NotificationService } from 'src/notification/notification.service';
-import { CreateInquiryDto, InquiriesResponse } from '../dto/inquiry.dto';
+import {
+  CreateInquiryDto,
+  InquiriesListResponse,
+  InquiriesResponse,
+} from '../../src/product/dto/inquiry.dto';
 
-jest.mock('../product.repository');
+jest.mock('src/product/product.repository');
 jest.mock('src/stores/stores.repository', () => {
   return {
     __esModule: true,
@@ -634,7 +638,7 @@ describe('postProductInquiry', () => {
   });
 });
 
-describe('getProductInquiries 상품 문의 목록조회', () => {
+describe('getMyInquiries 상품 문의 목록조회', () => {
   const productId = 'product-1';
   const fakeProduct = { id: productId, name: '테스트 상품' };
 
@@ -687,18 +691,18 @@ describe('getProductInquiries 상품 문의 목록조회', () => {
     (productRepository.findByProductId as jest.Mock).mockResolvedValue(fakeProduct);
     (productRepository.getInquiries as jest.Mock).mockResolvedValue(fakeInquiries);
 
-    const result: InquiriesResponse[] = await productService.getProductInquiries(productId);
+    const result: InquiriesListResponse = await productService.getProductInquiries(productId);
 
-    expect(result.length).toBe(2);
+    expect(result.list.length).toBe(2);
 
     // 첫 번째 문의 검증
-    expect(result[0]!.id).toBe('inq-1');
-    expect(result[0]!.user.name).toBe('사용자1');
-    expect(result[0]!.reply?.id).toBe('reply-1');
-    expect(result[0]!.reply?.user.name).toBe('관리자');
+    expect(result.list[0]!.id).toBe('inq-1');
+    expect(result.list[0]!.user.name).toBe('사용자1');
+    expect(result.list[0]!.reply?.id).toBe('reply-1');
+    expect(result.list[0]!.reply?.user.name).toBe('관리자');
 
     // 두 번째 문의 검증 (reply 없음)
-    expect(result[1]!.id).toBe('inq-2');
-    expect(result[1]!.reply).toBeNull();
+    expect(result.list[1]!.id).toBe('inq-2');
+    expect(result.list[1]!.reply).toBeNull();
   });
 });
