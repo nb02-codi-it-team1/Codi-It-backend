@@ -3,7 +3,9 @@ name: pr to discord
 on:
   workflow_dispatch:
   pull_request_target:
-    types: [opened, reopened, ready_for_review, closed, submitted]
+    types: [opened, reopened, ready_for_review, closed]
+  pull_request_review:
+    types: [submitted]
 
 jobs:
   notify-discord:
@@ -103,8 +105,12 @@ jobs:
           PR_NUMBER="${{ github.event.pull_request.number }}"
           REPO="${{ github.repository }}"
 
-          # PR 상세정보를 GitHub API로 가져오기 (포크 PR 지원)
-          API_RESPONSE=$(gh api repos/$REPO/pulls/$PR_NUMBER)
+          # PR 상세정보를 GitHub API로 가져오기 (포크 PR도 커버)
+          API_RESPONSE=$(gh api repos/$REPO/pulls/$PR_NUMBER 2>/dev/null || echo "")
+          if [ -z "$API_RESPONSE" ]; then
+            exit 0
+          fi
+
           PR_TITLE=$(echo "$API_RESPONSE" | jq -r '.title')
           PR_URL=$(echo "$API_RESPONSE" | jq -r '.html_url')
 
@@ -112,7 +118,6 @@ jobs:
           MSG="👍 **${REVIEWER}** 님이 PR을 승인했습니다: **${PR_TITLE}**\n<${PR_URL}>"
 
           if [ -z "$DISCORD_WEBHOOK_URL" ]; then
-            echo "Skipping Discord notification: no webhook URL"
             exit 0
           fi
 
