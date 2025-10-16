@@ -12,11 +12,7 @@ import {
   UpdateProductDto,
 } from '../../src/product/dto/product.dto';
 import { NotificationService } from 'src/notification/notification.service';
-import {
-  CreateInquiryDto,
-  InquiriesListResponse,
-  InquiriesResponse,
-} from '../../src/product/dto/inquiry.dto';
+import { CreateInquiryDto, InquiriesListResponse } from '../../src/product/dto/inquiry.dto';
 
 jest.mock('src/product/product.repository');
 jest.mock('src/stores/stores.repository', () => {
