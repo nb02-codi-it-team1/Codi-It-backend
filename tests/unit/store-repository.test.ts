@@ -4,9 +4,6 @@ import StoreRepository from '../../src/stores/stores.repository';
 import { mockDeep, DeepMockProxy } from 'jest-mock-extended';
 import { Decimal } from '@prisma/client/runtime/library';
 
-type Context = {
-  prisma: PrismaClient;
-};
 let mockPrisma: DeepMockProxy<PrismaClient>;
 let storeRepository: StoreRepository;
 
@@ -33,7 +30,7 @@ const expectedStore = {
 describe('Store Repository Unit Test', () => {
   beforeEach(() => {
     mockPrisma = mockDeep<PrismaClient>();
-    storeRepository = new StoreRepository(mockPrisma as unknown as Context['prisma']);
+    storeRepository = new StoreRepository(mockPrisma as unknown as PrismaClient);
 
     jest.clearAllMocks();
   });
