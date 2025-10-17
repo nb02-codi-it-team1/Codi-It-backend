@@ -97,15 +97,12 @@ export default class StoreService {
       throw new NotFoundError('존재하지 않는 스토어입니다.');
     }
 
-    const productsWithStock = await this.storeRepository.findMyStoreProducts(
-      userId,
-      page,
-      pageSize
-    );
+    const productsWithStock =
+      (await this.storeRepository.findMyStoreProducts(userId, page, pageSize)) || [];
     const totalCount = await this.storeRepository.countMyStoreProducts(userId);
 
     const productInfo = productsWithStock.map((product) => {
-      const stock = product.Stock.reduce((sum, current) => sum + current.quantity, 0);
+      const stock = (product.Stock || []).reduce((sum, current) => sum + current.quantity, 0);
       const isDiscount =
         (product.discountRate ?? 0) > 0 &&
         product.discountEndTime !== null &&
