@@ -90,11 +90,20 @@ export default class StoreController {
       const page = Number(req.query.page) || 1;
       const pageSize = Number(req.query.pageSize) || 10;
 
-      const productList = await this.storeService.getMyStoreProducts(userId, page, pageSize);
-      const productListResponse = plainToInstance(ProductResponseDto, productList, {
+      const { list, totalCount } = await this.storeService.getMyStoreProducts(
+        userId,
+        page,
+        pageSize
+      );
+
+      const productListResponse = plainToInstance(ProductResponseDto, list, {
         excludeExtraneousValues: true,
       });
-      return res.status(200).json(productListResponse);
+
+      return res.status(200).json({
+        list: productListResponse, // DTO 변환된 리스트
+        totalCount: totalCount, // 전체 개수
+      });
     } catch (error) {
       return next(error);
     }
