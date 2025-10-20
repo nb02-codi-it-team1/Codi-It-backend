@@ -152,7 +152,8 @@ export const inquiryService = {
   async postInquiryReply(
     userId: string,
     inquiryId: string,
-    body: CreateOrUpdateInquiryReplyDto
+    body: CreateOrUpdateInquiryReplyDto,
+    customNotificationService: NotificationService = notificationService
   ): Promise<InquiryReplyResponse> {
     const inquiry = await inquiryRepository.findInquiryByInquiryId(inquiryId);
     if (!inquiry) {
@@ -181,7 +182,7 @@ export const inquiryService = {
       content: `작성하신 ${inquiry.product.name} 문의에 대한 답변이 등록되었습니다.`,
       type: NotificationType.BUYER_INQUIRY_ANSWERED,
     };
-    notificationService.createAndSendNotification(inquiry.userId, inquiryDto);
+    await customNotificationService.createAndSendNotification(inquiry.userId, inquiryDto);
 
     /// --- 알림 로직 종료 ---
 
