@@ -11,5 +11,13 @@ export interface ReviewDto {
     productId: number
     rating: number;
     content: string;
+    createAt: Date;
 }
- 
+export interface ReviewResponseDto {
+  id: string;
+  userId: string;
+  productId: string;
+  rating: number;
+  content: string;
+  createAt: Date;
+}

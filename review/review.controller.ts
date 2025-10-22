@@ -1,5 +1,5 @@
-import ReviewRepository from './repository';
-import * as reviewService from './reviewservices';
+import ReviewRepository from '../review/review.repository';
+import * as reviewService from './review.services';
 import { Request, Response } from 'express';
 
 
@@ -61,7 +61,7 @@ export const deleteReviewController = async (req: Request, res: Response) => {
   }
   return res.status(200).json({messge:'리뷰가 삭제되었습니다.'});
   
-  }
+  } 
 
 
 // 리뷰 목록 조회 컨트롤러

@@ -4,18 +4,18 @@ import { createReviewController, deleteReviewController, getReviewDetailControll
 const router = Router();
 
 //리뷰 수정 라우터
-router.put("/review/:id", updateReviewController);
+router.put(":id", updateReviewController);
 
 //리뷰 상세 조회 라우터
-router.get("/review/:id", getReviewDetailController);
+router.get("id", getReviewDetailController);
 
 // 리뷰 등록 라우터
 router.post("/review", createReviewController);
 
 // 리뷰 삭제 라우터
-router.delete("/review/:id", deleteReviewController);
+router.delete("id", deleteReviewController);
 
 // 리뷰 목록 조회 라우터
-router.get("/reviews/productId", getReviewsForProductController);
+router.get("productId", getReviewsForProductController);
 
 export default router;

@@ -1,5 +1,15 @@
-import { PrismaClient } from '@prisma/client';
-//import { CreateReviewDto } from '../dtos/review.dto';
+import { Prisma, PrismaClient } from '@prisma/client';
+
+export default class ReviewRepository {
+    private readonly prisma : PrismaClient | Prisma.TransactionClient;
+
+    constructor (prisma: PrismaClient | Prisma.TransactionClient) {
+        this.prisma = prisma;
+    }
+}
+
+export {ReviewRepository};
+export const reviewRepository = new ReviewRepository (new PrismaClient);
 
 // 리뷰 생성 서비스
 const prisma = new PrismaClient();
@@ -59,3 +69,4 @@ export const deleteReview = async (productId:string) => {
   });
   return reviews;
 };
+
