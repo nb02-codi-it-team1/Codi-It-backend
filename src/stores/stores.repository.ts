@@ -94,7 +94,7 @@ export default class StoreRepository {
     });
   }
 
-  async deleteStroeLike(userId: string, storeId: string) {
+  async deleteStoreLike(userId: string, storeId: string) {
     return this.prisma.storeLike.delete({
       where: {
         userId_storeId: {
@@ -105,6 +105,7 @@ export default class StoreRepository {
       include: { store: true },
     });
   }
+
   async increaseLikeCount(storeId: string) {
     return this.prisma.store.update({
       where: { id: storeId },
@@ -116,23 +117,24 @@ export default class StoreRepository {
   }
 
   async decreaseLikeCount(storeId: string) {
-    const store = await this.prisma.store.findUnique({
+    return this.prisma.store.update({
       where: { id: storeId },
-      select: { favoriteCount: true, monthFavoriteCount: true },
+      data: {
+        favoriteCount: { decrement: 1 },
+        monthFavoriteCount: { decrement: 1 },
+      },
     });
+  }
 
-    if (!store) {
-      return;
-    }
-
-    const newFavoriteCount = Math.max(0, (store.favoriteCount || 0) - 1);
-    const newMonthFavoriteCount = Math.max(0, (store.monthFavoriteCount || 0) - 1);
+  async updateProductCount(storeId: string) {
+    const productCount = await this.prisma.product.count({
+      where: { storeId },
+    });
 
     return this.prisma.store.update({
       where: { id: storeId },
       data: {
-        favoriteCount: newFavoriteCount,
-        monthFavoriteCount: newMonthFavoriteCount,
+        productCount: productCount,
       },
     });
   }

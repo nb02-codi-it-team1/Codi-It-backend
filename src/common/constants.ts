@@ -1,9 +1,20 @@
 import dotenv from 'dotenv';
+import { InternalServerError } from '../common/errors/error-type';
 
 dotenv.config();
 
-const PORT = Number(process.env.PORT || 3000);
-const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'my-secret-access-token';
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'my-secret-refresh-token';
+function requireEnv(env: string): string {
+  const envValue = process.env[env];
+  if (!envValue) {
+    throw new InternalServerError(`환경 변수 ${env}가 설정되지 않았습니다.`);
+  }
+  return envValue;
+}
 
-export { PORT, JWT_ACCESS_SECRET, JWT_REFRESH_SECRET };
+export const PORT = Number(process.env.PORT || 3000);
+export const JWT_ACCESS_SECRET = requireEnv('JWT_ACCESS_SECRET');
+export const JWT_REFRESH_SECRET = requireEnv('JWT_REFRESH_SECRET');
+export const AWS_REGION = requireEnv('AWS_REGION');
+export const AWS_ACCESS_KEY_ID = requireEnv('AWS_ACCESS_KEY_ID');
+export const AWS_SECRET_ACCESS_KEY = requireEnv('AWS_SECRET_ACCESS_KEY');
+export const AWS_BUCKET_NAME = requireEnv('AWS_BUCKET_NAME');

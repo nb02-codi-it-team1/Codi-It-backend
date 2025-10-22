@@ -4,13 +4,19 @@ import prisma from './common/prisma/client';
 import userRouter from './users/user.routes';
 import authRouter from './auth/auth.routes';
 import StoresRouter from './stores/store.routes';
+import productRouter from './product/product.route';
+import NotificationRouter from './notification/notification.routes';
+import inquiryRouter from './inquiry/inquiry.route';
 import reviewRouter from '../review/review.router';
 
 const router = express.Router();
 
 router.use('/users', userRouter);
 router.use('/auth', authRouter);
+router.use('/products', productRouter);
+router.use('/inquiries', inquiryRouter);
 router.use('/stores', StoresRouter(prisma));
-router.use('/review', reviewRouter);
+router.use('/notifications', NotificationRouter(prisma));
+router.use('/reviews', reviewRouter);
 
 export default router;

@@ -17,11 +17,7 @@ export default class StoreService {
     this.storeRepository = storeRepository;
   }
 
-  async createStore(
-    userId: string,
-    data: CreateStoreDto,
-    file?: Express.Multer.File
-  ): Promise<StoreResponseDto> {
+  async createStore(userId: string, data: CreateStoreDto): Promise<StoreResponseDto> {
     const trimmedName = data.name.trim();
     const existingStore = await this.storeRepository.findByName(trimmedName);
     if (existingStore) {
@@ -36,10 +32,8 @@ export default class StoreService {
       },
     };
 
-    if (file) {
-      storeInfo.image = file.path;
-    } else {
-      storeInfo.image = 'wwww.sample.png'; // 기본 이미지 설정
+    if (!storeInfo.image) {
+      storeInfo.image = 'www.sample.png'; // 기본 이미지 설정
     }
     const newStore = await this.storeRepository.createStore(storeInfo);
 
@@ -49,8 +43,7 @@ export default class StoreService {
   async updateStore(
     storeId: string,
     userId: string,
-    data: UpdateStoreDto,
-    file?: Express.Multer.File
+    data: UpdateStoreDto
   ): Promise<StoreResponseDto> {
     const existingStore = await this.storeRepository.findById(storeId);
     if (!existingStore) {
@@ -63,11 +56,6 @@ export default class StoreService {
     const updateData = { ...data };
     if (updateData.name) {
       updateData.name = updateData.name.trim();
-    }
-
-    if (file) {
-      const newImageUrl = file.path;
-      updateData.image = newImageUrl;
     }
 
     if (updateData.name && updateData.name !== existingStore.name) {
@@ -104,24 +92,32 @@ export default class StoreService {
     page: number,
     pageSize: number
   ): Promise<MyStoreProductResponseDto> {
-    const productsWithStock = await this.storeRepository.findMyStoreProducts(
-      userId,
-      page,
-      pageSize
-    );
+    const myStore = await this.storeRepository.findMyStore(userId);
+    if (!myStore) {
+      throw new NotFoundError('존재하지 않는 스토어입니다.');
+    }
+
+    const productsWithStock =
+      (await this.storeRepository.findMyStoreProducts(userId, page, pageSize)) || [];
     const totalCount = await this.storeRepository.countMyStoreProducts(userId);
 
     const productInfo = productsWithStock.map((product) => {
-      const stock = product.Stock.reduce((sum, current) => sum + current.quantity, 0);
+      const stock = (product.Stock || []).reduce((sum, current) => sum + current.quantity, 0);
       const isDiscount =
         (product.discountRate ?? 0) > 0 &&
         product.discountEndTime !== null &&
         product.discountEndTime > new Date();
 
+      const isSoldOut = stock <= 0;
       return {
-        ...product,
+        id: product.id,
+        image: product.image,
+        name: product.name,
+        price: product.price.toNumber(),
+        createdAt: product.createdAt,
         stock,
         isDiscount,
+        isSoldOut,
         Stock: undefined,
       };
     });
@@ -162,8 +158,11 @@ export default class StoreService {
 
     const existingStoreLike = await this.storeRepository.storeLikeCheck(userId, storeId);
     if (existingStoreLike) {
-      await this.storeRepository.deleteStroeLike(userId, storeId);
-      await this.storeRepository.decreaseLikeCount(storeId);
+      await this.storeRepository.deleteStoreLike(userId, storeId);
+
+      if (existingStore.favoriteCount > 0) {
+        await this.storeRepository.decreaseLikeCount(storeId);
+      }
     }
 
     const updatedLikeStore = await this.storeRepository.findById(storeId);
