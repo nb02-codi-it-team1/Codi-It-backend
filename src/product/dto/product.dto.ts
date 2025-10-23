@@ -142,9 +142,6 @@ export class UpdateProductDto {
   @IsString({ message: '카테고리 이름은 문자열이어야 합니다.' })
   categoryName?: string;
 
-  // @IsString({ message: '상품 ID는 문자열이어야 합니다.' })
-  // id: string;
-
   @IsOptional()
   @IsBoolean({ message: '매진 여부는 true/false여야 합니다.' })
   isSoldOut?: boolean;
