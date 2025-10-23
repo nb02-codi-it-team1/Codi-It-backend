@@ -1,9 +1,11 @@
 import dotenv from 'dotenv';
 import { InternalServerError } from '../common/errors/error-type';
 
-const envFile = process.env.NODE_ENV === 'production' ? '.env.prod' : '.env.dev';
-
-dotenv.config({ path: envFile });
+if (process.env.NODE_ENV === 'production') {
+  dotenv.config({ path: '.env.prod' });
+} else {
+  dotenv.config({ path: '.env.dev' });
+}
 
 function requireEnv(env: string): string {
   const envValue = process.env[env];
