@@ -1,7 +1,9 @@
 import dotenv from 'dotenv';
 import { InternalServerError } from '../common/errors/error-type';
 
-dotenv.config();
+const envFile = process.env.NODE_ENV === 'production' ? '.env.prod' : '.env.dev';
+
+dotenv.config({ path: envFile });
 
 function requireEnv(env: string): string {
   const envValue = process.env[env];
@@ -18,3 +20,5 @@ export const AWS_REGION = requireEnv('AWS_REGION');
 export const AWS_ACCESS_KEY_ID = requireEnv('AWS_ACCESS_KEY_ID');
 export const AWS_SECRET_ACCESS_KEY = requireEnv('AWS_SECRET_ACCESS_KEY');
 export const AWS_BUCKET_NAME = requireEnv('AWS_BUCKET_NAME');
+export const COOKIE_SECURE = requireEnv('COOKIE_SECURE') === 'true';
+export const COOKIE_SAMESITE = requireEnv('COOKIE_SAMESITE') as 'lax' | 'none';

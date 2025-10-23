@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import AuthService from './auth.service';
 import { LoginDto } from './dtos/login.dto';
 import { UnauthorizedError } from '../common/errors/error-type';
+import { COOKIE_SECURE, COOKIE_SAMESITE } from '../common/constants';
 
 export default class AuthController {
   private readonly authService: AuthService;
@@ -19,8 +20,8 @@ export default class AuthController {
       // 토큰을 쿠키에 저장
       res.cookie('refreshToken', response.refreshToken, {
         httpOnly: true,
-        secure: false, // HTTPS를 사용하는 경우 true로 설정
-        sameSite: 'lax', // HTTPS를 사용하는 경우 'none'으로 설정
+        secure: COOKIE_SECURE,
+        sameSite: COOKIE_SAMESITE,
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
       });
 
