@@ -45,8 +45,8 @@ export default class AuthController {
       // 새 RefreshToken을 쿠키에 저장
       res.cookie('refreshToken', response.refreshToken, {
         httpOnly: true,
-        secure: false, // HTTPS 환경이라면 true
-        sameSite: 'lax', // HTTPS 환경이라면 'none'
+        secure: COOKIE_SECURE,
+        sameSite: COOKIE_SAMESITE,
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
       });
 
