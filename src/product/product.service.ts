@@ -212,12 +212,11 @@ export const productService = {
     if (!product) {
       throw new NotFoundError();
     }
-
     const previousStocks = product.Stock;
 
     let categoryConnect;
     if (body.categoryName) {
-      const category = await productRepository.findCategoryByName(body.categoryName);
+      const category = await productRepository.findCategoryByName(body.categoryName.toUpperCase());
       if (!category) throw new NotFoundError();
       categoryConnect = { connect: { id: category.id } };
     } else if (product.Category) {
@@ -244,7 +243,6 @@ export const productService = {
       quantity: s.quantity,
     }));
     const updatedProduct = await productRepository.updateWithStocks(productId, data, stocks);
-
     /*
      * notification 추가
      * 사이즈별 품절 알림

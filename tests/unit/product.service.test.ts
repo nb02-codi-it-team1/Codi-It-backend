@@ -1,5 +1,6 @@
 import 'reflect-metadata';
-import { Decimal, InquiryStatus, UserType } from '@prisma/client';
+import { InquiryStatus, UserType } from '@prisma/client';
+import Decimal from 'decimal.js';
 import { productService } from '../../src/product/product.service';
 import { productRepository } from '../../src/product/product.repository';
 import { BadRequestError, NotFoundError } from 'src/common/errors/error-type';
@@ -115,7 +116,7 @@ describe('createProduct 함수 테스트', () => {
     expect(result.id).toBe('prod-1');
     expect(result.name).toBe(body.name);
     expect(result.storeName).toBe('스토어이름');
-    expect(result.category[0]!.name).toBe(CategoryType.TOP);
+    expect(result.category!.name).toBe(CategoryType.TOP);
     expect(result.stocks.length).toBe(1);
     expect(result.stocks[0]!.quantity).toBe(5);
     expect(result.discountPrice).toBeCloseTo(9000);
@@ -250,7 +251,7 @@ describe('updateProduct 함수 테스트', () => {
   };
 
   const body: UpdateProductDto = {
-    id: 'prod-1',
+    // id: 'prod-1',
     name: '업데이트 상품',
     price: 12000,
     content: '설명 수정',
@@ -300,7 +301,7 @@ describe('updateProduct 함수 테스트', () => {
     mockProductRepository.updateWithStocks.mockResolvedValue({
       id: productId,
       name: body.name as string,
-      price: body.price as Decimal,
+      price: body.price as unknown as Decimal,
       content: body.content as string,
       image: body.image as string,
       discountRate: body.discountRate as number,

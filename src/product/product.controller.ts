@@ -47,11 +47,6 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
     const userId = req.user?.id as string;
     const productId = req.params.productId!;
     const updateData = req.body;
-    // if (productId !== req.body.id) {
-    //   res.status(400).json({ message: 'URL과 body의 상품 ID가 일치하지 않습니다.' });
-    // }
-    console.log(updateData);
-    console.log(productId);
     const updateProduct = await productService.updateProduct(userId, productId, updateData);
     res.status(200).json(updateProduct);
   } catch (error) {

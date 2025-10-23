@@ -144,12 +144,19 @@ describe('productRepository', () => {
         where: { id: 'p1' },
         data: expect.objectContaining({
           name: 'Updated test',
-          Stock: expect.objectContaining({
-            deleteMany: { productId: 'p1' },
-          }),
+          Stock: {
+            upsert: expect.any(Array), // upsert 배열 형태인지 확인
+          },
         }),
-        include: expect.any(Object),
+        include: {
+          store: true,
+          Stock: {
+            include: { size: true },
+          },
+          Category: true,
+        },
       });
+
       expect(result).toBe(mockProduct);
     });
   });
