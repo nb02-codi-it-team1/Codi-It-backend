@@ -15,11 +15,9 @@ export class NotificationService {
 
   addClient(res: SseClient): () => void {
     this.clients.add(res);
-    console.log(`새로운 SSE 클라이언트 연결`);
 
     return () => {
       this.clients.delete(res);
-      console.log(`SSE 클라이언트 연결 종료`);
     };
   }
 
