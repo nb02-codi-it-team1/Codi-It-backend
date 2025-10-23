@@ -26,10 +26,10 @@ export const productRepository = {
         ...data, // 기존 업데이트 데이터 포함
         Stock: stocks
           ? {
-              deleteMany: { productId }, // 기존 재고 삭제
-              create: stocks.map((stock) => ({
-                size: { connect: { id: stock.sizeId } }, // FK 연결
-                quantity: stock.quantity,
+              upsert: stocks.map((stock) => ({
+                where: { productId_sizeId: { productId, sizeId: stock.sizeId } },
+                update: { quantity: stock.quantity },
+                create: { size: { connect: { id: stock.sizeId } }, quantity: stock.quantity },
               })),
             }
           : undefined, // stocks가 없으면 건드리지 않음

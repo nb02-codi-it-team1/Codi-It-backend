@@ -25,8 +25,7 @@ app.get('/health', (req, res) => {
 });
 
 app.use('/api', indexRouter);
-
-app.use(globalErrorHandler);
 app.use(notFoundHandler);
+app.use(globalErrorHandler);
 
 export default app;
