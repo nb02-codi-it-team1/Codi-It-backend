@@ -8,5 +8,7 @@ declare namespace Express {
     };
 
     file?: Express.MulterS3.File;
+
+    storeId?: string;
   }
 }

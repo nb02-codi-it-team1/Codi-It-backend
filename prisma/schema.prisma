@@ -91,12 +91,13 @@ model Product {
   isSoldOut         Boolean   @default(false)
   categoryId        String?
 
-  store    Store      @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  CartItem CartItem[]
-  Review   Review[]
-  Stock    Stock[]
-  Inquiry  Inquiry[]
-  Category Category?  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  store     Store       @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  CartItem  CartItem[]
+  Review    Review[]
+  Stock     Stock[]
+  Inquiry   Inquiry[]
+  Category  Category?   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  OrderItem OrderItem[]
 
   @@index([name])
 }
@@ -164,7 +165,8 @@ model OrderItem {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
 model Payment {
