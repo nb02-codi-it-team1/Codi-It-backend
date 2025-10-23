@@ -85,8 +85,8 @@ export const productService = {
       reviews: [],
       inquiries: [],
       category: product.Category
-        ? [{ id: product.Category.id, name: product.Category.name as CategoryType }]
-        : [],
+        ? { id: product.Category.id, name: product.Category.name as CategoryType }
+        : { id: '', name: 'UNKNOWN' as CategoryType },
       stocks: product.Stock.map((s) => ({
         id: s.id,
         productId: s.productId,
@@ -212,24 +212,29 @@ export const productService = {
     if (!product) {
       throw new NotFoundError();
     }
-
     const previousStocks = product.Stock;
 
-    let categoryConnect = undefined;
+    let categoryConnect;
     if (body.categoryName) {
-      const category = await productRepository.findCategoryByName(body.categoryName);
+      const category = await productRepository.findCategoryByName(body.categoryName.toUpperCase());
       if (!category) throw new NotFoundError();
       categoryConnect = { connect: { id: category.id } };
+    } else if (product.Category) {
+      categoryConnect = { connect: { id: product.Category.id } };
     }
-    const data = {
-      name: body.name,
-      price: body.price,
-      content: body.content,
-      image: body.image,
-      discountRate: body.discountRate,
-      discountStartTime: body.discountStartTime ? new Date(body.discountStartTime) : null,
-      discountEndTime: body.discountEndTime ? new Date(body.discountEndTime) : null,
-      isSoldOut: body.isSoldOut,
+    const data: Prisma.ProductUpdateInput = {
+      name: body.name ?? product.name,
+      price: body.price ?? product.price,
+      content: body.content ?? product.content,
+      image: body.image ?? product.image,
+      discountRate: body.discountRate ?? product.discountRate,
+      discountStartTime: body.discountStartTime
+        ? new Date(body.discountStartTime)
+        : product.discountStartTime,
+      discountEndTime: body.discountEndTime
+        ? new Date(body.discountEndTime)
+        : product.discountEndTime,
+      isSoldOut: body.isSoldOut ?? product.isSoldOut,
       Category: categoryConnect,
     };
 
@@ -238,7 +243,6 @@ export const productService = {
       quantity: s.quantity,
     }));
     const updatedProduct = await productRepository.updateWithStocks(productId, data, stocks);
-
     /*
      * notification 추가
      * 사이즈별 품절 알림
@@ -308,8 +312,8 @@ export const productService = {
       reviews: [], // 필요하다면 repo에서 Review join해서 계산
       inquiries: [], // 필요하다면 repo에서 Inquiry join
       category: updatedProduct.Category
-        ? [{ id: updatedProduct.Category.id, name: updatedProduct.Category.name as CategoryType }]
-        : [],
+        ? { id: updatedProduct.Category.id, name: updatedProduct.Category.name as CategoryType }
+        : { id: '', name: 'UNKNOWN' as CategoryType },
       stocks: updatedProduct.Stock.map((s) => ({
         id: s.id,
         productId: s.productId,
@@ -376,8 +380,8 @@ export const productService = {
           : null,
       })),
       category: product.Category // 배열로 감싸기
-        ? [{ id: product.Category.id, name: product.Category.name as CategoryType }]
-        : [],
+        ? { id: product.Category.id, name: product.Category.name as CategoryType }
+        : { id: '', name: 'UNKNOWN' as CategoryType },
       stocks: product.Stock.map((s) => ({
         id: s.id,
         productId: s.productId,
