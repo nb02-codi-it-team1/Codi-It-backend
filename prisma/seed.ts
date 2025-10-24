@@ -1,12 +1,5 @@
 import prisma from '../src/common/prisma/client';
 import bcrypt from 'bcrypt';
-import dotenv from 'dotenv';
-
-if (process.env.NODE_ENV === 'production') {
-  dotenv.config({ path: '.env.prod' });
-} else {
-  dotenv.config({ path: '.env.dev' });
-}
 
 async function main() {
   const grades = [

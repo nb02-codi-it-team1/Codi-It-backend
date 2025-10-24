@@ -5,9 +5,8 @@
   "scripts": {
     "build": "rm -rf dist/* && tsc",
     "start": "NODE_ENV=production node dist/src/server.js",
-    "dev": "NODE_ENV=development nodemon --watch src --ext ts --exec ts-node -r tsconfig-paths/register --files src/server.ts",
-    "seed": "NODE_ENV=development ts-node prisma/seed.ts",
-    "seed:prod": "NODE_ENV=production ts-node prisma/seed.ts",
+    "dev": "nodemon --watch src --ext ts --exec ts-node -r tsconfig-paths/register --files src/server.ts",
+    "seed": "ts-node prisma/seed.ts",
     "reset": "npx prisma migrate reset -f",
     "migrate": "npx prisma migrate dev",
     "lint": "npx eslint --fix .",
