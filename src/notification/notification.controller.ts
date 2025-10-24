@@ -4,6 +4,9 @@ import { plainToInstance } from 'class-transformer';
 import { NotificationResponseDto } from './dto/response.dto';
 import { BadRequestError } from 'src/common/errors/error-type';
 
+const PING_INTERVAL_MS = 30000;
+const ALLOWED_ORIGIN = process.env.FRONTEND_URL || 'http://localhost:3001';
+
 export class NotificationController {
   private readonly notificationService: NotificationService;
 
@@ -16,11 +19,18 @@ export class NotificationController {
       'content-type': 'text/event-stream',
       'cache-control': 'no-cache',
       connection: 'keep-alive',
+      'access-control-allow-origin': ALLOWED_ORIGIN,
     });
 
     const removeClient = this.notificationService.addClient(res);
 
+    // 30초마다 핑(Ping) 메시지 전송
+    const pingIntervalId = setInterval(() => {
+      res.write(': keep-alive\n\n');
+    }, PING_INTERVAL_MS);
+
     req.on('close', () => {
+      clearInterval(pingIntervalId);
       removeClient();
     });
   };

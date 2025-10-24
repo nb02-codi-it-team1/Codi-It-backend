@@ -7,7 +7,12 @@ import prisma from './common/prisma/client';
 
 dotenv.config();
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
   startCronJobs(prisma);
 });
+
+const KEEP_ALIVE_TIMEOUT_MS = 65000;
+
+server.keepAliveTimeout = KEEP_ALIVE_TIMEOUT_MS;
+server.headersTimeout = KEEP_ALIVE_TIMEOUT_MS + 1000;
