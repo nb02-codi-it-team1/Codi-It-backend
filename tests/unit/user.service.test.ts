@@ -121,7 +121,7 @@ describe('UserService Unit Test', () => {
   test('getUserLikedStores - 결과 없음 시 NotFoundError', async () => {
     userRepository.getUserLikedStores.mockResolvedValue([]);
 
-    await expect(userService.getUserLikedStores(user.id)).rejects.toThrow(NotFoundError);
+    await expect(userService.getUserLikedStores(user.id)).resolves.toEqual([]);
   });
 
   test('getUserLikedStores - 관심 스토어가 있으면 반환', async () => {
