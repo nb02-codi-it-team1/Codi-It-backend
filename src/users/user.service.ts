@@ -71,7 +71,7 @@ export default class UserService {
     const likedStores = await this.userRepository.getUserLikedStores(userId);
 
     if (!likedStores || likedStores.length === 0) {
-      throw new NotFoundError('관심 스토어가 없습니다.');
+      return [];
     }
 
     return likedStores.map((like) => ({
