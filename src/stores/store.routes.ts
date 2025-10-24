@@ -8,7 +8,7 @@ import { CreateStoreDto } from './dtos/create.dto';
 import { UpdateStoreDto } from './dtos/update.dto';
 import { s3Upload, mapFileToBody } from '../middleware/s3-upload';
 import passport from 'passport';
-import { authorizeSeller } from '../middleware/authorization';
+import { authorizeSeller, requireSellerType } from '../middleware/authorization';
 
 const StoresRouter = (prisma: PrismaClient): Router => {
   const router = Router();
@@ -20,7 +20,7 @@ const StoresRouter = (prisma: PrismaClient): Router => {
   router.post(
     '/',
     passport.authenticate('jwt', { session: false }),
-    authorizeSeller,
+    requireSellerType,
     s3Upload.single('image'),
     mapFileToBody,
     validateDto(CreateStoreDto),
