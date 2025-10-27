@@ -1,4 +1,4 @@
-// // store.service unit test
+// store.repository unit test
 import { PrismaClient } from '@prisma/client/extension';
 import StoreRepository from '../../src/stores/stores.repository';
 import { mockDeep, DeepMockProxy } from 'jest-mock-extended';
