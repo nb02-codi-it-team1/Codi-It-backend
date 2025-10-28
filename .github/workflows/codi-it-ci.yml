@@ -1,0 +1,78 @@
+name: codi-it-ci
+
+on:
+  pull_request:
+    branches:
+      - dev
+
+jobs:
+  test:
+    name: Run Lint & Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U testuser"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      # 소스 코드 다운로드
+      - name: Download source code
+        uses: actions/checkout@v4
+
+      # Node.js 환경 설정
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      # 의존성 설치
+      - name: Install dependencies
+        run: npm install
+
+      # DB 준비 대기
+      - name: Wait for DB to be ready
+        run: sleep 3
+
+      # 테스트용 .env.test 파일 생성
+      - name: Generate test environment file (.env.test)
+        run: |
+          cat <<EOF > .env.test
+          PORT=0
+          DATABASE_URL=postgresql://testuser:testpass@localhost:5432/testdb?schema=public
+          JWT_ACCESS_SECRET=test_access_secret
+          JWT_REFRESH_SECRET=test_refresh_secret
+          AWS_REGION=ap-northeast-2
+          AWS_ACCESS_KEY_ID=test-access-key
+          AWS_SECRET_ACCESS_KEY=test-secret-key
+          AWS_BUCKET_NAME=test-bucket
+          NODE_ENV=test
+          EOF
+        shell: bash
+
+      # Prisma 마이그레이션
+      - name: Run Prisma Migrate
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://testuser:testpass@localhost:5432/testdb?schema=public
+
+      # Lint 실행
+      - name: Run Lint
+        run: npm run lint
+
+      # Jest 테스트 실행
+      - name: Run Jest Tests
+        run: npm run test
+        env:
+          DATABASE_URL: postgresql://testuser:testpass@localhost:5432/testdb?schema=public

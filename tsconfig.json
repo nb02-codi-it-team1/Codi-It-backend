@@ -38,7 +38,8 @@
     "types": [
       "node",
       "express",
-      "multer"
+      "multer",
+      "jest"
     ],
     "typeRoots": [
       "src/@types",
@@ -53,8 +54,9 @@
   "include": [
     "src/**/*",
     "prisma/**/*.ts",
-    "types/**/*"
-  ],
+    "types/**/*",
+    "reset-monthly-count.ts"
+, "tests" ],
   "exclude": [
     "node_modules"
   ]
