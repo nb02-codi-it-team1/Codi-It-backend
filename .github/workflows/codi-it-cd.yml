@@ -63,5 +63,6 @@ jobs:
             mkdir -p /home/ec2-user/logs
             pm2 restart all || pm2 start ecosystem.config.js
             pm2 save
-            sudo cp ./nginx/nginx.conf /etc/nginx/conf.d/codi-it.conf
+            sudo cp ./nginx/nginx.conf /etc/nginx/conf.d/codi-it-proxy.conf
+            sudo nginx -t
             sudo systemctl restart nginx
