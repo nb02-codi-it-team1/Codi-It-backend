@@ -8,6 +8,7 @@ import productRouter from './product/product.route';
 import NotificationRouter from './notification/notification.routes';
 import inquiryRouter from './inquiry/inquiry.route';
 import DashboardRouter from './dashboard/dashboard.routes';
+import MetadataRouter from './metadata/metadata.route';
 
 const router = express.Router();
 
@@ -18,5 +19,6 @@ router.use('/inquiries', inquiryRouter);
 router.use('/stores', StoresRouter(prisma));
 router.use('/notifications', NotificationRouter(prisma));
 router.use('/dashboard', DashboardRouter(prisma));
+router.use('/metadata', MetadataRouter(prisma));
 
 export default router;
