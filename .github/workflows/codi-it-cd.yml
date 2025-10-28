@@ -39,7 +39,7 @@ jobs:
           target: '/home/ec2-user/codi-it'
 
       # env설정 및 서버 설정 및 재시작
-      - name: Restart app on EC2 (debug mode)
+      - name: Restart app on EC2
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -65,21 +65,30 @@ jobs:
             FRONTEND_URL=${{ secrets.FRONTEND_URL }}
             EOF
 
-            echo "STEP 3: npm ci"
-            time npm ci
+            echo "STEP 3: remove old node_modules"
+            rm -rf node_modules
 
-            echo "STEP 4: npx prisma generate"
-            time npx prisma generate
+            echo "STEP 4: npm ci"
+            npm ci --ignore-scripts
 
-            echo "STEP 5: npx prisma db push --accept-data-loss"
-            time npx prisma db push --accept-data-loss
+            echo "STEP 5: reinstall prisma"
+            npm install prisma @prisma/client --force 
 
-            echo "STEP 6: mkdir logs and pm2 restart/start"
+            echo "STEP 6: generate prisma client"
+            npx prisma generate
+
+            echo "STEP 7: push prisma schema"
+            npx prisma db push --accept-data-loss
+
+            echo "STEP 8: seed prisma data"
+            npx ts-node prisma/seed.ts
+
+            echo "STEP 9: mkdir logs and pm2 restart/start"
             mkdir -p /home/ec2-user/logs
-            time pm2 restart all || pm2 start ecosystem.config.js
+            pm2 restart all || pm2 start ecosystem.config.js
             pm2 save
 
-            echo "STEP 7: nginx copy, restart"
+            echo "STEP 10: nginx copy, restart"
             sudo cp ./nginx/nginx.conf /etc/nginx/conf.d/codi-it-proxy.conf
             sudo nginx -t
             sudo systemctl restart nginx
