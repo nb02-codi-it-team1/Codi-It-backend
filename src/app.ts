@@ -5,6 +5,7 @@ import cors from 'cors';
 import indexRouter from './index.routes';
 import cookieParser from 'cookie-parser';
 import passport from './auth/passport-jwt';
+import { useSwagger } from './common/swagger';
 
 const app = express();
 
@@ -25,6 +26,9 @@ app.get('/health', (req, res) => {
 });
 
 app.use('/api', indexRouter);
+// 스웨거 불러오기
+useSwagger(app);
+
 app.use(notFoundHandler);
 app.use(globalErrorHandler);
 
