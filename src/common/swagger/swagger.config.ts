@@ -363,17 +363,64 @@ export const swaggerOptions = {
           properties: {
             id: { type: 'string' },
             name: { type: 'string' },
+            image: { type: 'string' },
+            content: { type: 'string' },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' },
+            reviewsRating: { type: 'number' },
+            reviewsCount: { type: 'number' },
+            storeId: { type: 'string' },
+            storeName: { type: 'string' },
             price: { type: 'number' },
             discountPrice: { type: 'number' },
             discountRate: { type: 'number' },
-            discountStartTime: { type: 'string' },
-            discountEndTime: { type: 'string' },
-            image: { type: 'string' },
-            content: { type: 'string' },
-            createdAt: { type: 'string' },
-            updatedAt: { type: 'string' },
-            storeId: { type: 'string' },
-            storeName: { type: 'string' },
+            discountStartTime: { type: 'string', format: 'date-time' },
+            discountEndTime: { type: 'string', format: 'date-time' },
+            reviews: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  rate1Length: { type: 'number' },
+                  rate2Length: { type: 'number' },
+                  rate3Length: { type: 'number' },
+                  rate4Length: { type: 'number' },
+                  rate5Length: { type: 'number' },
+                  sumScore: { type: 'number' },
+                },
+              },
+            },
+            inquiries: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string' },
+                  title: { type: 'string' },
+                  content: { type: 'string' },
+                  status: { type: 'string' },
+                  isSecret: { type: 'boolean' },
+                  createdAt: { type: 'string', format: 'date-time' },
+                  updatedAt: { type: 'string', format: 'date-time' },
+                  reply: {
+                    type: 'object',
+                    properties: {
+                      id: { type: 'string' },
+                      content: { type: 'string' },
+                      createdAt: { type: 'string', format: 'date-time' },
+                      updatedAt: { type: 'string', format: 'date-time' },
+                      user: {
+                        type: 'object',
+                        properties: {
+                          id: { type: 'string' },
+                          name: { type: 'string' },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
             category: {
               type: 'array',
               items: {
@@ -387,13 +434,21 @@ export const swaggerOptions = {
                 type: 'object',
                 properties: {
                   id: { type: 'string' },
-                  size: { type: 'string' },
+                  productId: { type: 'string' },
                   quantity: { type: 'number' },
+                  size: {
+                    type: 'object',
+                    properties: {
+                      id: { type: 'number' },
+                      name: { type: 'string' },
+                    },
+                  },
                 },
               },
             },
           },
         },
+
         // 400: 이미 상품이 존재하거나 잘못된 요청
         ProductError400Response: {
           type: 'object',
@@ -753,12 +808,20 @@ export const swaggerOptions = {
         StoreUpdateRequest: {
           type: 'object',
           properties: {
-            name: { type: 'string', example: 'CODI-IT' },
-            address: { type: 'string', example: '서울특별시 강남구 테헤란로 123' },
-            detailAddress: { type: 'string', example: '1동 1106호' },
-            phoneNumber: { type: 'string', example: '010-1234-5678' },
-            content: { type: 'string', example: '저희는 CODI-IT 입니다.' },
-            image: { type: 'string', example: 'https://example.com/image.jpg' },
+            name: { type: 'string', example: 'CODI-IT', description: '이름' },
+            address: {
+              type: 'string',
+              example: '서울특별시 강남구 테헤란로 123',
+              description: '주소',
+            },
+            detailAddress: { type: 'string', example: '1동 1106호', description: '상세 주소' },
+            phoneNumber: { type: 'string', example: '010-1234-5678', description: '전화번호' },
+            content: { type: 'string', example: '저희는 CODI-IT 입니다.', description: '내용' },
+            image: {
+              type: 'string',
+              example: 'https://example.com/image.jpg',
+              description: '이미지 URL 또는 경로',
+            },
           },
           required: [], // PATCH는 선택적
         },

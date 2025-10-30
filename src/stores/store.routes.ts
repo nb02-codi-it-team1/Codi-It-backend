@@ -101,7 +101,7 @@ const StoresRouter = (prisma: PrismaClient): Router => {
    *         required: true
    *         schema:
    *           type: string
-   *           example: CUID
+   *           example: storeId
    *         description: 조회할 스토어 ID
    *     responses:
    *       200:
@@ -123,6 +123,7 @@ const StoresRouter = (prisma: PrismaClient): Router => {
    * /api/stores/detail/my:
    *   get:
    *     summary: 내 스토어 상세 조회
+   *     description: 내 스토어 상세 조회입니다.
    *     tags: [Stores]
    *     responses:
    *       200:
@@ -191,7 +192,7 @@ const StoresRouter = (prisma: PrismaClient): Router => {
    *         required: true
    *         schema:
    *           type: string
-   *           example: CUID
+   *           example: storeId
    *         description: 관심 스토어 ID
    *     responses:
    *       201:
@@ -220,7 +221,7 @@ const StoresRouter = (prisma: PrismaClient): Router => {
    *         required: true
    *         schema:
    *           type: string
-   *           example: CUID
+   *           example: storeId
    *         description: 관심 스토어 ID
    *     responses:
    *       200:
