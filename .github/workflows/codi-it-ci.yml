@@ -41,6 +41,10 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      #  ts-node & typescript 설치
+      - name: Install ts-node and typescript
+        run: npm install -D ts-node typescript
+
       # DB 준비 대기
       - name: Wait for DB to be ready
         run: sleep 3
