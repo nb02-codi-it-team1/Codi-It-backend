@@ -7,17 +7,17 @@ type SseClient = import('express').Response;
 
 export class NotificationService {
   private readonly notificationRepository: NotificationRepository;
-  private readonly clients = new Set<SseClient>();
+  private readonly clients = new Map<string, SseClient>();
 
   constructor(notificationRepository: NotificationRepository) {
     this.notificationRepository = notificationRepository;
   }
 
-  addClient(res: SseClient): () => void {
-    this.clients.add(res);
+  addClient(userId: string, res: SseClient): () => void {
+    this.clients.set(userId, res);
 
     return () => {
-      this.clients.delete(res);
+      this.clients.delete(userId);
     };
   }
 
@@ -36,13 +36,19 @@ export class NotificationService {
       size: dto.size,
     });
 
-    const data = JSON.stringify(newNotification);
-    this.clients.forEach((client) => {
+    const client = this.clients.get(userId);
+
+    if (client) {
+      const data = JSON.stringify(newNotification);
       client.write(`id: ${newNotification.id}\n`);
       client.write(`event: new_notification\n`);
       client.write(`data: ${data}\n\n`);
-    });
-
+      console.log(`Notification sent to user: ${userId}`);
+    } else {
+      console.log(
+        `[SSE PUSH FAIL] User ${userId} is NOT connected. Notification saved to DB only.`
+      );
+    }
     return plainToInstance(NotificationResponseDto, newNotification);
   }
 
