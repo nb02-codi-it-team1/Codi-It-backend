@@ -17,7 +17,7 @@ const userController = new UserController(userService);
 // 회원가입
 /**
  * @swagger
- * /api/users/register:
+ * /api/users:
  *   post:
  *     summary: 회원가입
  *     tags: [Users]
@@ -29,7 +29,7 @@ const userController = new UserController(userService);
  *             $ref: '#/components/schemas/UserRegisterRequest'
  *     responses:
  *       201:
- *         description: 회원 가입 성공
+ *         description: 회원 가입 성공한 유저의 값을 반환
  *         content:
  *           application/json:
  *             schema:
@@ -52,7 +52,7 @@ router.post('/', validateDto(CreateUserDto), userController.createUser);
  *     tags: [Users]
  *     responses:
  *       200:
- *         description: 내 정보 조회 성공
+ *         description: 내 정보 조회 성공 및 유저 정보 반환
  *         content:
  *           application/json:
  *             schema:
@@ -139,6 +139,7 @@ router.get(
  * /api/users/delete:
  *   delete:
  *     summary: 회원 탈퇴
+ *     description: 현재 로그인한 사용자의 계정을 삭제합니다
  *     tags: [Users]
  *     responses:
  *       200:

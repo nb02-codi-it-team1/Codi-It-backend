@@ -173,18 +173,21 @@ router.get('/:productId', getProductDetail);
  *         multipart/form-data:
  *           schema:
  *             type: object
+ *             required: ['id', 'stocks']
  *             properties:
- *               name: { type: string, example: '가디건' }
- *               price: { type: number, example: 20000 }
- *               content: { type: string, example: '제품 상세 정보' }
- *               image: { type: string, example: 'https://example.com/img.jpg' }
- *               discountRate: { type: number, example: 10 }
- *               discountStartTime: { type: string, example: '2025-06-01T00:00:00Z' }
- *               discountEndTime: { type: string, example: '2025-06-10T00:00:00Z' }
- *               categoryName: { type: string, example: 'bottom' }
- *               isSoldOut: { type: boolean, example: false }
+ *               name: { type: string, example: '가디건', description: '상품 이름' }
+ *               price: { type: number, example: 20000, description: '정가'}
+ *               content: { type: string, description: '제품 상세 정보' }
+ *               image: { type: string, example: 'https://example.com/img.jpg', description: 'image url' }
+ *               discountRate: { type: number, example: 10, description: '할인율' }
+ *               discountStartTime: { type: string, example: '2025-06-01T00:00:00Z', description: '할인 시작 날짜' }
+ *               discountEndTime: { type: string, example: '2025-06-10T00:00:00Z', description: '할인 종료 날짜' }
+ *               categoryName: { type: string, example: 'bottom', description: '카테고리 이름' }
+ *               id: { type : string , description: '상품 ID '}
+ *               isSoldOut: { type: boolean, example: false, description: '매진 여부' }
  *               stocks:
  *                 type: array
+ *                 description: '상품 재고'
  *                 items:
  *                   type: object
  *                   properties:
@@ -196,13 +199,13 @@ router.get('/:productId', getProductDetail);
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ProductUpdateResponse'
+ *               $ref: '#/components/schemas/ProductUpdateDetailResponse'
  *       404:
  *         description: 상품을 찾을 수 없거나 카테고리가 없습니다.
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ProductUpdateError404Response'
+ *               $ref: '#/components/schemas/ProductUpdateDetailError404Response'
  */
 router.patch(
   '/:productId',

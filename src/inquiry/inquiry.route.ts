@@ -76,7 +76,7 @@ router.get('/', passport.authenticate('jwt', { session: false }), getMyInquiries
  *         description: "조회할 문의의 ID"
  *         schema:
  *           type: string
- *           example: "cmbt09aqd00qwu4r84czhy7j9"
+ *           example: "inquiryId"
  *     responses:
  *       200:
  *         description: 문의 상세 조회 성공
@@ -119,7 +119,7 @@ router.get('/:inquiryId', passport.authenticate('jwt', { session: false }), getD
  *         description: "수정할 문의의 ID"
  *         schema:
  *           type: string
- *           example: "cmbt09aqd00qwu4r84czhy7j9"
+ *           example: "inquiryId"
  *     requestBody:
  *       required: true
  *       content:
@@ -173,7 +173,7 @@ router.patch(
  *         description: "삭제할 문의의 ID"
  *         schema:
  *           type: string
- *           example: "cmbt09aqd00qwu4r84czhy7j9"
+ *           example: "inquiryId"
  *     responses:
  *       200:
  *         description: 문의 삭제 성공
@@ -257,7 +257,7 @@ router.post(
  *         description: "조회할 문의 답변의 ID"
  *         schema:
  *           type: string
- *           example: "cmbt09aqd00qwu4r84czhy7j9"
+ *           example: "replyId"
  *     responses:
  *       200:
  *         description: 문의 답변 상세 조회 성공
@@ -266,7 +266,7 @@ router.post(
  *             schema:
  *               $ref: '#/components/schemas/InquiryDetail'
  *       404:
- *         description: 문의 또는 답변이 존재하지 않습니다.
+ *         description:  답변이 존재하지 않습니다.
  *         content:
  *           application/json:
  *             schema:
@@ -274,7 +274,7 @@ router.post(
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "문의가 존재하지 않습니다."
+ *                   example: "답변이 존재하지 않습니다."
  *                 statusCode:
  *                   type: integer
  *                   example: 404
