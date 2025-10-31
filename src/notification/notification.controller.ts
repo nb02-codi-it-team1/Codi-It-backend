@@ -15,6 +15,12 @@ export class NotificationController {
   }
 
   sseConnect = (req: Request, res: Response) => {
+    const userId = req.user?.id;
+    if (!userId || typeof userId !== 'string') {
+      res.status(401).end();
+      return;
+    }
+
     res.writeHead(200, {
       'content-type': 'text/event-stream',
       'cache-control': 'no-cache',
@@ -22,7 +28,7 @@ export class NotificationController {
       'access-control-allow-origin': ALLOWED_ORIGIN,
     });
 
-    const removeClient = this.notificationService.addClient(res);
+    const removeClient = this.notificationService.addClient(userId, res);
 
     // 30초마다 핑(Ping) 메시지 전송
     const pingIntervalId = setInterval(() => {
