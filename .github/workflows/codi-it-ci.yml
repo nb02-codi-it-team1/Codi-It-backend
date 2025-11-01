@@ -41,6 +41,10 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      #  ts-node & typescript 설치
+      - name: Install ts-node and typescript
+        run: npm install -D ts-node typescript
+
       # DB 준비 대기
       - name: Wait for DB to be ready
         run: sleep 3
@@ -61,11 +65,21 @@ jobs:
           EOF
         shell: bash
 
-      # Prisma 마이그레이션
-      - name: Run Prisma Migrate
-        run: npx prisma migrate deploy
+      # Prisma Client 생성
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      # Prisma db push
+      - name: Run Prisma db push
+        run: npx prisma db push
         env:
           DATABASE_URL: postgresql://testuser:testpass@localhost:5432/testdb?schema=public
+
+      # 시드 데이터 삽입
+      - name: Seed Database
+        run: npx ts-node prisma/seed.ts
+        env:
+            DATABASE_URL: postgresql://testuser:testpass@localhost:5432/testdb?schema=public
 
       # Lint 실행
       - name: Run Lint

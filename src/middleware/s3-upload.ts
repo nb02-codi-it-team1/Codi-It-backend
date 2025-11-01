@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import multer from 'multer';
 import multerS3 from 'multer-s3';
 import path from 'path';
-import { v4 as uuidv4 } from 'uuid';
+import * as crypto from 'crypto';
 import { BadRequestError } from '../common/errors/error-type';
 import { S3Client } from '@aws-sdk/client-s3';
 import {
@@ -33,7 +33,7 @@ export const s3Upload = multer({
     contentType: multerS3.AUTO_CONTENT_TYPE,
     key(req, file, cb) {
       const ext = path.extname(file.originalname);
-      const filename = `${uuidv4()}${ext}`;
+      const filename = `${crypto.randomUUID()}${ext}`;
       cb(null, filename);
     },
   }),
