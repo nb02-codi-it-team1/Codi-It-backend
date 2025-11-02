@@ -45,21 +45,21 @@
 
 <br>
 
-### 팀원 별 구현 기능
+### 팀원 별 담당 기능
 
-| 이름 | 역할 | 구현 기능 |
-|------|-------------|-------------|
+| 이름   | 역할 | 담당 기능                                                                       |
+| ------ | ---- | ------------------------------------------------------------------------------- |
 | 하상준 | 팀장 | 인증, 유저, 등급, CI-CD, 배포, 이미지 업로드, 유닛 테스트, 통합 테스트, 팀 문서 |
-| 고민재 | 팀원 | 상품, 문의, 답변, 사이즈, 카테고리, Swagger, 유닛 테스트 |
-| 윤희원 | 팀원 | 스토어, 관심스토어, 알림, 대시보드, 시연 영상 촬영, 유닛 테스트 |
-| 김슬비 | 팀원 | 장바구니, 주문, 구매, 유닛 테스트 |
-| 박건영 | 팀원 | 리뷰, 유닛 테스트 |
+| 고민재 | 팀원 | 상품, 문의, 답변, 사이즈, 카테고리, Swagger, 유닛 테스트                        |
+| 윤희원 | 팀원 | 스토어, 관심스토어, 알림, 대시보드, 시연 영상 촬영, 유닛 테스트                 |
+| 김슬비 | 팀원 | 장바구니, 주문, 구매, 유닛 테스트                                               |
+| 박건영 | 팀원 | 리뷰, 별점 로직, 유닛 테스트                                                    |
 
 <br>
 
 ## 프로젝트 상세 개요
 
-### 전체 개발 일정 
+### 전체 개발 일정
 
 ```mermaid
 gantt
@@ -92,7 +92,7 @@ gantt
 
 ### 주요 기능
 
-#### 인증 회원
+#### 인증
 
 1. 이메일 및 비밀번호 기반 로그인/로그아웃
 
@@ -142,8 +142,7 @@ gantt
 
 2. 리뷰 수정·삭제·조회 기능
 
-
-#### 문의 
+#### 문의
 
 1. 구매자 문의 등록 / 판매자 답변 기능
 
@@ -163,25 +162,24 @@ gantt
 
 2. 판매자: 품절 상품 알림, 신규 문의 알림
 
-
 <br>
 
 ## 기술 스택
 
-|     분류     | 사용 도구                    |
-| :----------: | ---------------------------- |
-|  프레임워크  | Node.js (Express)            |
-|     언어     | TypeScript                   |
-|  스키마/ORM  | Prisma                       |
-| 데이터베이스 | PostgreSQL                   |
-|  API 문서화  | swagger                      |
-| 실시간 알림  | SSE(Server-Sent Events)      |
-|    테스트    | Jest + supertest             |
-|  코드 품질   | ESLint + Prettier            |
-|    CI/CD     | Github Actions               |
-|     배포     | AWS EC2, S3, Nginx, PM2, RDS |
-|  협업 도구   | Discord, GitHub, Notion      |
-|  일정 관리   | GitHub Issues + Notion       |
+|     분류     | 사용 도구                          |
+| :----------: | ---------------------------------- |
+|  프레임워크  | Node.js (Express)                  |
+|     언어     | TypeScript                         |
+|  스키마/ORM  | Prisma                             |
+| 데이터베이스 | PostgreSQL                         |
+|  API 문서화  | swagger                            |
+| 실시간 알림  | SSE(Server-Sent Events)            |
+|    테스트    | Jest + supertest                   |
+|  코드 품질   | ESLint + Prettier, class-validator |
+|    CI/CD     | Github Actions                     |
+|     배포     | AWS EC2, S3, Nginx, PM2, RDS       |
+|  협업 도구   | Discord, GitHub, Notion            |
+|  일정 관리   | GitHub Issues + Notion             |
 
 <br>
 
@@ -200,26 +198,26 @@ gantt
 │   ├─ middleware/
 │   │
 │   ├─ common/
-│   │   ├─ errors/       
+│   │   ├─ errors/
 │   │   ├─ prisma/      (공용 DB 연결용)
 │   │   ├─ utils/
 │   │   └─ constants.ts
 │   │
-│   ├─ users/  
+│   ├─ users/
 │   │   ├─ user.routes.ts
 │   │   ├─ user.controller.ts
 │   │   ├─ user.service.ts
 │   │   ├─ user.repository.ts
 │   │    dtos/
 │   │
-│   ├─ auth/                     
-│   ├─ product/          
-│   ├─ inquiry/ 
-│   ├─ review/           
+│   ├─ auth/
+│   ├─ product/
+│   ├─ inquiry/
+│   ├─ review/
 │   ├─ stores/
 │   ├─ cart/
 │   ├─ dashboard/
-│   └─ notification/      
+│   └─ notification/
 │
 ├─ tests/
 ├─ types/
