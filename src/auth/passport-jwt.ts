@@ -22,6 +22,10 @@ const extractor = (req: Request): string | null => {
   const fromCookie = req?.cookies?.accessToken ?? null;
   if (fromCookie) return fromCookie;
 
+  // 쿼리에서 꺼내기
+  const fromQuery = req.query.token as string | null;
+  if (fromQuery) return fromQuery;
+
   // 헤더에서 꺼내기
   const fromHeader = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
   return fromHeader ?? null;

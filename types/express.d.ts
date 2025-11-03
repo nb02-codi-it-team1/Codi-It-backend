@@ -11,4 +11,7 @@ declare namespace Express {
 
     storeId?: string;
   }
+  interface Response {
+    flush?: () => void;
+  }
 }

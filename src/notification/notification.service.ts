@@ -7,43 +7,61 @@ type SseClient = import('express').Response;
 
 export class NotificationService {
   private readonly notificationRepository: NotificationRepository;
-  private readonly clients = new Set<SseClient>();
+  private readonly clients = new Map<string, SseClient>();
 
   constructor(notificationRepository: NotificationRepository) {
     this.notificationRepository = notificationRepository;
   }
 
-  addClient(res: SseClient): () => void {
-    this.clients.add(res);
+  addClient(userId: string, res: SseClient): () => void {
+    this.clients.set(userId, res);
 
     return () => {
-      this.clients.delete(res);
+      this.clients.delete(userId);
     };
   }
 
   async createAndSendNotification(
     userId: string,
     dto: CreateNotificationDto
-  ): Promise<NotificationResponseDto> {
-    const newNotification = await this.notificationRepository.createNotification({
-      user: {
-        connect: {
-          id: userId,
+  ): Promise<NotificationResponseDto | null> {
+    let newNotification;
+    try {
+      newNotification = await this.notificationRepository.createNotification({
+        user: {
+          connect: {
+            id: userId,
+          },
         },
-      },
-      type: dto.type,
-      content: dto.content,
-      size: dto.size,
-    });
+        type: dto.type,
+        content: dto.content,
+        size: dto.size,
+      });
 
-    const data = JSON.stringify(newNotification);
-    this.clients.forEach((client) => {
-      client.write(`id: ${newNotification.id}\n`);
-      client.write(`event: new_notification\n`);
-      client.write(`data: ${data}\n\n`);
-    });
+      const client = this.clients.get(userId);
 
-    return plainToInstance(NotificationResponseDto, newNotification);
+      if (client) {
+        console.log(`Notification sent to user: ${userId}`);
+        const notificationToSend = plainToInstance(NotificationResponseDto, newNotification, {
+          excludeExtraneousValues: true,
+        });
+
+        const data = JSON.stringify(notificationToSend);
+        client.write(`id: ${newNotification.id}\n`);
+        client.write(`event: message\n`);
+        client.write(`data: ${data}\n\n`);
+        if (client.flush) client.flush();
+        console.log(`Notification sent to user: ${userId}`);
+      } else {
+        console.log(
+          `[SSE PUSH FAIL] User ${userId} is NOT connected. Notification saved to DB only.`
+        );
+      }
+      return plainToInstance(NotificationResponseDto, newNotification);
+    } catch (error) {
+      console.error(`[FATAL NOTIF ERROR] DB or Push failed for User ${userId}:`, error);
+      return null;
+    }
   }
 
   async getNotifications(userId: string): Promise<NotificationResponseDto[]> {
