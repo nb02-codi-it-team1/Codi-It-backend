@@ -24,32 +24,44 @@ export class NotificationService {
   async createAndSendNotification(
     userId: string,
     dto: CreateNotificationDto
-  ): Promise<NotificationResponseDto> {
-    const newNotification = await this.notificationRepository.createNotification({
-      user: {
-        connect: {
-          id: userId,
+  ): Promise<NotificationResponseDto | null> {
+    let newNotification;
+    try {
+      newNotification = await this.notificationRepository.createNotification({
+        user: {
+          connect: {
+            id: userId,
+          },
         },
-      },
-      type: dto.type,
-      content: dto.content,
-      size: dto.size,
-    });
+        type: dto.type,
+        content: dto.content,
+        size: dto.size,
+      });
 
-    const client = this.clients.get(userId);
+      const client = this.clients.get(userId);
 
-    if (client) {
-      const data = JSON.stringify(newNotification);
-      client.write(`id: ${newNotification.id}\n`);
-      client.write(`event: new_notification\n`);
-      client.write(`data: ${data}\n\n`);
-      console.log(`Notification sent to user: ${userId}`);
-    } else {
-      console.log(
-        `[SSE PUSH FAIL] User ${userId} is NOT connected. Notification saved to DB only.`
-      );
+      if (client) {
+        console.log(`Notification sent to user: ${userId}`);
+        const notificationToSend = plainToInstance(NotificationResponseDto, newNotification, {
+          excludeExtraneousValues: true,
+        });
+
+        const data = JSON.stringify(notificationToSend);
+        client.write(`id: ${newNotification.id}\n`);
+        client.write(`event: message\n`);
+        client.write(`data: ${data}\n\n`);
+        if (client.flush) client.flush();
+        console.log(`Notification sent to user: ${userId}`);
+      } else {
+        console.log(
+          `[SSE PUSH FAIL] User ${userId} is NOT connected. Notification saved to DB only.`
+        );
+      }
+      return plainToInstance(NotificationResponseDto, newNotification);
+    } catch (error) {
+      console.error(`[FATAL NOTIF ERROR] DB or Push failed for User ${userId}:`, error);
+      return null;
     }
-    return plainToInstance(NotificationResponseDto, newNotification);
   }
 
   async getNotifications(userId: string): Promise<NotificationResponseDto[]> {

@@ -1,16 +1,32 @@
 import { Router } from 'express';
-import { NotificationRepository } from './notification.repository';
+// import { NotificationRepository } from './notification.repository';
 import { NotificationService } from './notification.service';
 import { NotificationController } from './notification.controller';
 import { PrismaClient } from '@prisma/client';
 import passport from 'passport';
 
-const NotificationRouter = (prisma: PrismaClient): Router => {
+const NotificationRouter = (
+  prisma: PrismaClient,
+  notificationService: NotificationService
+): Router => {
   const router = Router();
 
-  const notificationRepository = new NotificationRepository(prisma);
-  const notificationService = new NotificationService(notificationRepository);
+  // const notificationRepository = new NotificationRepository(prisma);
+  // const notificationService = new NotificationService(notificationRepository);
   const notificationController = new NotificationController(notificationService);
+
+  router.options('/sse', (req, res) => {
+    // 클라이언트가 전송할 수 있는 모든 헤더를 허용합니다.
+    res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    res.header('Access-Control-Allow-Origin', process.env.FRONTEND_URL || 'http://localhost:3001');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    // Preflight 결과를 브라우저가 86400초(24시간) 동안 캐시하도록 허용
+    res.header('Access-Control-Max-Age', '86400');
+
+    // 200 OK 또는 204 No Content로 응답합니다.
+    res.sendStatus(200);
+  });
 
   /**
    * @swagger

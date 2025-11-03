@@ -26,18 +26,24 @@ export class NotificationController {
       'cache-control': 'no-cache',
       connection: 'keep-alive',
       'access-control-allow-origin': ALLOWED_ORIGIN,
+      'access-control-allow-credentials': 'true',
+      vary: 'Origin',
     });
 
+    res.write(': sse connection established\n\n');
+    if (res.flush) res.flush();
     const removeClient = this.notificationService.addClient(userId, res);
 
     // 30초마다 핑(Ping) 메시지 전송
     const pingIntervalId = setInterval(() => {
       res.write(': keep-alive\n\n');
+      if (res.flush) res.flush();
     }, PING_INTERVAL_MS);
 
     req.on('close', () => {
       clearInterval(pingIntervalId);
       removeClient();
+      res.end();
     });
   };
 
