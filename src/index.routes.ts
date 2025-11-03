@@ -18,7 +18,7 @@ const sharedNotificationService = new NotificationService(sharedNotificationRepo
 
 router.use('/users', userRouter);
 router.use('/auth', authRouter);
-router.use('/products', productRouter);
+router.use('/products', productRouter(prisma, sharedNotificationService));
 router.use('/inquiries', InquiryRouter(prisma, sharedNotificationService));
 router.use('/stores', StoresRouter(prisma));
 router.use('/notifications', NotificationRouter(prisma, sharedNotificationService));
