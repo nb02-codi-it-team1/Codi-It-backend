@@ -13,7 +13,7 @@ const server = app.listen(PORT, () => {
   startCronJobs(prisma);
 });
 
-const KEEP_ALIVE_TIMEOUT_MS = 65000;
+const KEEP_ALIVE_TIMEOUT_MS = 120000;
 
 server.keepAliveTimeout = KEEP_ALIVE_TIMEOUT_MS;
 server.headersTimeout = KEEP_ALIVE_TIMEOUT_MS + 1000;
