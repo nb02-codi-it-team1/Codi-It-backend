@@ -742,7 +742,7 @@ export default class ProductService {
             type: NotificationType.BUYER_SOLD_OUT,
             size: sizeName,
           };
-          this.notificationService.createAndSendNotification(buyerId, buyerDto);
+          await this.notificationService.createAndSendNotification(buyerId, buyerDto);
         }
 
         const sellerDto: CreateNotificationDto = {
@@ -750,7 +750,7 @@ export default class ProductService {
           type: NotificationType.SELLER_SOLD_OUT,
           size: sizeName,
         };
-        this.notificationService.createAndSendNotification(sellerId, sellerDto);
+        await this.notificationService.createAndSendNotification(sellerId, sellerDto);
       }
 
       // 재입고 알림
@@ -767,7 +767,7 @@ export default class ProductService {
             type: NotificationType.BUYER_RESTOCKED,
             size: sizeName,
           };
-          this.notificationService.createAndSendNotification(buyerId, buyerDto);
+          await this.notificationService.createAndSendNotification(buyerId, buyerDto);
         }
       }
     }
@@ -909,7 +909,7 @@ export default class ProductService {
         content: `${product.name}에 새로운 문의가 등록되었습니다.`,
         type: NotificationType.SELLER_NEW_INQUIRY,
       };
-      this.notificationService.createAndSendNotification(sellerId, sellerDto);
+      await this.notificationService.createAndSendNotification(sellerId, sellerDto);
     }
 
     return inquiry;
