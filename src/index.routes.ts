@@ -10,7 +10,7 @@ import InquiryRouter from './inquiry/inquiry.route';
 import DashboardRouter from './dashboard/dashboard.routes';
 import { NotificationRepository } from './notification/notification.repository';
 import { NotificationService } from './notification/notification.service';
-import { buildCartRouter } from './cart/cart.routes'
+import { buildCartRouter } from './cart/cart.routes';
 
 const router = express.Router();
 
