@@ -116,13 +116,14 @@ model Stock {
 
 model Cart {
   id        String   @id @default(cuid())
-  buyerId   String
-  quantity  Int
+  buyerId   String  @unique
+  quantity  Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  buyer    User       @relation("UserCart", fields: [buyerId], references: [id])
-  CartItem CartItem[]
+  buyer User? @relation("UserCart", fields: [buyerId], references: [id])
+
+  items CartItem[]
 }
 
 model CartItem {
@@ -135,8 +136,10 @@ model CartItem {
   updatedAt DateTime @updatedAt
 
   cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
-  pruduct Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   size    Size    @relation(fields: [sizeId], references: [id])
+
+  @@unique([cartId, productId, sizeId])
 }
 
 model Order {
@@ -158,7 +161,7 @@ model OrderItem {
   id         String   @id @default(cuid())
   orderId    String
   productId  String
-  sizeId     String
+  sizeId     Int
   quantity   Int
   price      Decimal  @db.Decimal(18, 2)
   isReviewed Boolean? @default(false)
@@ -256,7 +259,7 @@ model Notification {
 
 model Size {
   id   Int    @id
-  name String @unique
+  name String
   ko   String
   en   String
 

@@ -6,6 +6,7 @@ export const notFoundHandler: RequestHandler = (
   res: Response,
   next: NextFunction
 ) => {
+  console.log(req.originalUrl)
   const message = `요청된 페이지를 찾을 수 없습니다.`;
   next(new NotFoundError(message));
 };
