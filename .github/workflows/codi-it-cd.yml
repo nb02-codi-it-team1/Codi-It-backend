@@ -37,6 +37,8 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           source: '.'
           target: '/home/ec2-user/codi-it'
+          debug: true
+
 
       # env설정 및 서버 설정 및 재시작
       - name: Restart app on EC2
