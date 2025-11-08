@@ -259,7 +259,7 @@ model Notification {
 
 model Size {
   id   Int    @id
-  name String
+  name String @unique
   ko   String
   en   String
 

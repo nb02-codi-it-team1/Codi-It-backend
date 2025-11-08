@@ -1,14 +1,18 @@
-// src/cart/cart.service.test.ts
-
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 import CartService from '../../src/cart/cart.service';
 import CartRepository from '../../src/cart/cart.repository';
-import { Prisma } from '@prisma/client';
-import { NotFoundError, BadRequestError } from '../../src/common/errors/error-type';
+import { Prisma, Cart as PrismaCart, CartItem as PrismaCartItem } from '@prisma/client';
+import { NotFoundError } from '../../src/common/errors/error-type';
+import { CartDto } from '../../src/cart/dtos/cart.dto';
+import { CartItemDto } from '../../src/cart/dtos/cart-item.dto';
+import { CartItemDetailDto } from '../../src/cart/dtos/cart-item-detail.dto';
+import { CreateCartItemDto } from '../../src/cart/dtos/create-cart-item.dto';
+import { UpdateCartBySizesDto } from '../../src/cart/dtos/update-cart-by-sizes.dto';
 
-// --- Mock 설정 ---
-let mockCartRepository: DeepMockProxy<CartRepository>;
-let cartService: CartService;
+type RepoCartItemPayload = Parameters<CartRepository['toCartItemDto']>[0];
+
+let repo: DeepMockProxy<CartRepository>;
+let service: CartService;
 
 const BUYER_ID = 'user-test-123';
 const CART_ID = 'cart-test-ABC';
@@ -16,195 +20,257 @@ const PRODUCT_ID = 'prod-A';
 const SIZE_ID = 1;
 const CART_ITEM_ID = 'item-XYZ';
 const NOW = new Date();
-const NOW_ISO = NOW.toISOString();
 
-// Mock Cart 및 CartItem 데이터 구조 (Prisma 반환 타입)
-const mockCart = {
-    id: CART_ID,
-    buyerId: BUYER_ID,
-    quantity: 5,
-    createdAt: NOW,
-    updatedAt: NOW,
+/** Prisma Cart (원본은 Date) */
+const cart: PrismaCart = {
+  id: CART_ID,
+  buyerId: BUYER_ID,
+  quantity: 5,
+  createdAt: NOW,
+  updatedAt: NOW,
 };
 
-const mockCartItemPrismaPayload = {
-    id: CART_ITEM_ID,
-    cartId: CART_ID,
-    productId: PRODUCT_ID,
-    sizeId: SIZE_ID,
-    quantity: 5,
+const row: RepoCartItemPayload = {
+  id: CART_ITEM_ID,
+  cartId: CART_ID,
+  productId: PRODUCT_ID,
+  sizeId: SIZE_ID,
+  quantity: 5,
+  createdAt: NOW,
+  updatedAt: NOW,
+  cart,
+  size: { id: SIZE_ID, name: 'S', ko: '소', en: 'S' },
+  product: {
+    id: PRODUCT_ID,
+    storeId: 'store-1',
+    name: 'Test Product',
+    price: new Prisma.Decimal(100),
+    image: 'img.jpg',
+    discountRate: 0,
+    discountStartTime: null,
+    discountEndTime: null,
     createdAt: NOW,
     updatedAt: NOW,
-    cart: mockCart,
-    product: {
-        id: PRODUCT_ID,
-        storeId: 'store-1',
-        name: 'Test Product',
-        price: new Prisma.Decimal(100),
-        image: 'img.jpg',
-        discountRate: 0,
-        discountStartTime: null,
-        discountEndTime: null,
+    content: null,
+    categoryId: null,
+    isSoldOut: false,
+    store: {
+      id: 'store-1',
+      name: 'Shop',
+      content: 'Desc',
+      image: 'store.jpg',
+      createdAt: NOW,
+      updatedAt: NOW,
+    } as RepoCartItemPayload['product']['store'],
+    Stock: [
+      {
+        id: 'S1',
+        productId: PRODUCT_ID,
+        sizeId: SIZE_ID,
+        quantity: 10,
+        size: { id: SIZE_ID, name: 'S', ko: '소', en: 'S' },
+      },
+    ] as RepoCartItemPayload['product']['Stock'],
+  },
+};
+
+describe('CartService', () => {
+  beforeEach(() => {
+    repo = mockDeep<CartRepository>();
+    service = new CartService(repo);
+
+    jest.clearAllMocks();
+
+    // 공통 mock
+    repo.getOrCreateCartByBuyer.mockResolvedValue(cart);
+    repo.recalcCartQuantity.mockResolvedValue(undefined);
+
+    // 정확한 시그니처로 DTO 변환기 구현
+    repo.toCartItemDto.mockImplementation((it: RepoCartItemPayload): CartItemDto => {
+      const p = it.product;
+      return {
+        id: it.id,
+        cartId: it.cartId,
+        productId: it.productId,
+        sizeId: it.sizeId,
+        quantity: it.quantity,
+        createdAt: it.createdAt.toISOString(),
+        updatedAt: it.updatedAt.toISOString(),
+        product: {
+          id: p.id,
+          storeId: p.storeId,
+          storeName: p.store.name,
+          name: p.name,
+          image: p.image,
+          price: Number(p.price),
+          discountRate: p.discountRate,
+          discountStartTime: p.discountStartTime ? p.discountStartTime.toISOString() : null,
+          discountEndTime: p.discountEndTime ? p.discountEndTime.toISOString() : null,
+          isSoldOut: p.isSoldOut ?? false,
+          stocks: p.Stock.map((s) => ({
+            id: s.id,
+            quantity: s.quantity,
+            size: { id: s.sizeId, name: s.size.ko },
+          })),
+          store: { id: p.store.id, name: p.store.name },
+        },
+      };
+    });
+  });
+
+  // --- CREATE ---
+  describe('createCartItem', () => {
+    const input: CreateCartItemDto = { productId: PRODUCT_ID, sizeId: SIZE_ID, quantity: 2 };
+
+    it('기존 없으면 생성 후 CartDto 반환', async () => {
+      repo.findCartItem.mockResolvedValue(null);
+
+      const res = await service.createCartItem(BUYER_ID, input);
+
+      const expectedCreate: Prisma.CartItemCreateInput = {
+        cart: { connect: { id: CART_ID } },
+        product: { connect: { id: PRODUCT_ID } },
+        size: { connect: { id: SIZE_ID } },
+        quantity: 2,
+      };
+      expect(repo.createCartItem).toHaveBeenCalledWith(expectedCreate);
+      expect(repo.updateCartItem).not.toHaveBeenCalled();
+      expect(repo.recalcCartQuantity).toHaveBeenCalledWith(CART_ID);
+
+      const r = res as CartDto;
+      expect(r.id).toBe(CART_ID);
+      expect(typeof r.createdAt).toBe('string');
+      expect(typeof r.updatedAt).toBe('string');
+    });
+
+    it('기존 있으면 수량 합산 업데이트', async () => {
+      const existing: PrismaCartItem = {
+        id: CART_ITEM_ID,
+        cartId: CART_ID,
+        productId: PRODUCT_ID,
+        sizeId: SIZE_ID,
+        quantity: 3,
         createdAt: NOW,
         updatedAt: NOW,
-        store: { id: 'store-1', userId: 'seller-1', name: 'Shop', address: 'Addr', phoneNumber: '000', content: 'Desc', image: 'store.jpg', createdAt: NOW, updatedAt: NOW },
-        Stock: [{ id: 'S1', productId: PRODUCT_ID, sizeId: SIZE_ID, quantity: 10, size: { id: SIZE_ID, name: 'S', ko: '소', en: 'S' } }],
-    },
-    size: { id: SIZE_ID, name: 'S', ko: '소', en: 'S' },
-};
+      };
+      repo.findCartItem.mockResolvedValue(existing);
 
+      await service.createCartItem(BUYER_ID, input);
 
-// --- Test Suite 시작 ---
-describe('CartService 유닛 테스트', () => {
-    beforeEach(() => {
-        // 매 테스트마다 새로운 Mock과 Service 인스턴스 생성
-        mockCartRepository = mockDeep<CartRepository>();
-        cartService = new CartService(mockCartRepository as any);
+      expect(repo.createCartItem).not.toHaveBeenCalled();
+      expect(repo.updateCartItem).toHaveBeenCalledWith(CART_ITEM_ID, 5);
+      expect(repo.recalcCartQuantity).toHaveBeenCalledWith(CART_ID);
+    });
+  });
 
-        jest.clearAllMocks();
+  // --- READ LIST ---
+  describe('getCartItems', () => {
+    it('CartResponseDto로 반환', async () => {
+      repo.findAllCartItems.mockResolvedValue([row]);
 
-        // 공통 Mock 설정
-        mockCartRepository.getOrCreateCartByBuyer.mockResolvedValue(mockCart);
-        mockCartRepository.recalcCartQuantity.mockResolvedValue(undefined);
+      const res = await service.getCartItems(BUYER_ID);
+
+      expect(repo.findAllCartItems).toHaveBeenCalledWith(CART_ID);
+      expect(res.id).toBe(CART_ID);
+      expect(res.items).toHaveLength(1);
+      expect(typeof res.createdAt).toBe('string');
+      expect(typeof res.updatedAt).toBe('string');
+    });
+  });
+
+  // --- READ DETAIL ---
+  describe('getCartItem', () => {
+    it('단건 상세 반환', async () => {
+      repo.findCartItemDetail.mockResolvedValue(row);
+
+      const result = await service.getCartItem(BUYER_ID, CART_ITEM_ID);
+
+      const detail = result as CartItemDetailDto;
+      expect(repo.findCartItemDetail).toHaveBeenCalledWith(CART_ITEM_ID, BUYER_ID);
+      expect(detail.id).toBe(CART_ITEM_ID);
+      expect(detail.product.storeId).toBe(row.product.storeId);
+      expect(detail.product.storeName).toBe(row.product.store.name);
+      expect(typeof detail.createdAt).toBe('string');
+      expect(typeof detail.updatedAt).toBe('string');
     });
 
-    // --- 1. POST /api/cart (아이템 생성/추가) 테스트 ---
-    describe('장바구니 아이템 추가 (createCartItem)', () => {
-        const createDto = { productId: PRODUCT_ID, sizeId: SIZE_ID, quantity: 2 };
+    it('없으면 NotFoundError', async () => {
+      repo.findCartItemDetail.mockRejectedValue(new NotFoundError('not found'));
+      await expect(service.getCartItem(BUYER_ID, 'x')).rejects.toThrow(NotFoundError);
+    });
+  });
 
-        test('기존 아이템이 없을 경우, 새로 생성하고 201 응답까지의 처리 시간 확인', async () => {
-            // Setup: 기존 아이템 없음
-            mockCartRepository.findCartItem.mockResolvedValue(null);
-            mockCartRepository.createCartItem.mockResolvedValue({} as any);
-            mockCartRepository.getOrCreateCartByBuyer.mockResolvedValueOnce(mockCart).mockResolvedValue(mockCart); // 첫 호출: 기존 카트, 두 번째 호출: 업데이트된 카트
+  // --- PATCH ---
+  describe('patchCartItems', () => {
+    it('기존이면 수량 수정 후 배열 반환', async () => {
+      const dto: UpdateCartBySizesDto = {
+        productId: PRODUCT_ID,
+        sizes: [{ sizeId: SIZE_ID, quantity: 10 }],
+      };
 
-            const startTime = process.hrtime.bigint();
-            const result = await cartService.createCartItem(BUYER_ID, createDto);
-            const endTime = process.hrtime.bigint();
-            const elapsedTimeMs = Number(endTime - startTime) / 1_000_000;
+      const existing: PrismaCartItem = {
+        id: CART_ITEM_ID,
+        cartId: CART_ID,
+        productId: PRODUCT_ID,
+        sizeId: SIZE_ID,
+        quantity: 5,
+        createdAt: NOW,
+        updatedAt: NOW,
+      };
 
-            expect(mockCartRepository.createCartItem).toHaveBeenCalled();
-            expect(mockCartRepository.updateCartItem).not.toHaveBeenCalled();
-            expect(mockCartRepository.recalcCartQuantity).toHaveBeenCalledWith(CART_ID);
+      repo.findCartItem.mockResolvedValue(existing);
+      repo.findAllCartItems.mockResolvedValue([{ ...row, quantity: 10 } as RepoCartItemPayload]);
 
-            expect(result.id).toBe(CART_ID);
-        });
+      const result = await service.patchCartItems(BUYER_ID, dto);
+      const list = result as CartItemDto[];
 
-        test('기존 아이템이 있을 경우, 수량 업데이트하고 201 응답까지의 처리 시간 확인', async () => {
-            // Setup: 기존 아이템 있음
-            const existingItem = { id: CART_ITEM_ID, quantity: 3, cartId: CART_ID, productId: PRODUCT_ID, sizeId: SIZE_ID, createdAt: NOW, updatedAt: NOW };
-            mockCartRepository.findCartItem.mockResolvedValue(existingItem);
-            mockCartRepository.updateCartItem.mockResolvedValue({} as any);
+      expect(Array.isArray(list)).toBe(true);
+      expect(list.length).toBe(1);
 
-            const startTime = process.hrtime.bigint();
-            await cartService.createCartItem(BUYER_ID, createDto);
-            const endTime = process.hrtime.bigint();
-            const elapsedTimeMs = Number(endTime - startTime) / 1_000_000;
-
-            expect(mockCartRepository.createCartItem).not.toHaveBeenCalled();
-            expect(mockCartRepository.updateCartItem).toHaveBeenCalledWith(CART_ITEM_ID, 5);
-            expect(mockCartRepository.recalcCartQuantity).toHaveBeenCalledWith(CART_ID);
-        });
+      const first: CartItemDto | undefined = list[0];
+      if (!first) {
+        throw new Error('expected one item');
+      }
+      expect(first.quantity).toBe(10);
     });
 
-    // --- 2. GET /api/cart (전체 조회) 테스트 ---
-    describe('장바구니 전체 조회 (getCartItems)', () => {
-        test('전체 아이템 목록을 DTO로 변환하여 반환하고 처리 시간 확인', async () => {
-            // Setup: Mock Repository 반환값 설정
-            mockCartRepository.findAllCartItems.mockResolvedValue([mockCartItemPrismaPayload] as any);
-            mockCartRepository.toCartItemDto.mockReturnValue({ id: CART_ITEM_ID, quantity: 5 } as any);
+    it('수량 0이면 삭제', async () => {
+      const dto: UpdateCartBySizesDto = {
+        productId: PRODUCT_ID,
+        sizes: [{ sizeId: SIZE_ID, quantity: 0 }],
+      };
 
-            const startTime = process.hrtime.bigint();
-            const result = await cartService.getCartItems(BUYER_ID);
-            const endTime = process.hrtime.bigint();
-            const elapsedTimeMs = Number(endTime - startTime) / 1_000_000;
+      const existing: PrismaCartItem = {
+        id: CART_ITEM_ID,
+        cartId: CART_ID,
+        productId: PRODUCT_ID,
+        sizeId: SIZE_ID,
+        quantity: 5,
+        createdAt: NOW,
+        updatedAt: NOW,
+      };
 
-            expect(mockCartRepository.findAllCartItems).toHaveBeenCalledWith(CART_ID);
-            expect(mockCartRepository.toCartItemDto).toHaveBeenCalledTimes(1);
-            expect(result.items).toHaveLength(1);
-            expect(result.id).toBe(CART_ID);
-        });
+      repo.findCartItem.mockResolvedValue(existing);
+      repo.findAllCartItems.mockResolvedValue([]);
+
+      const result = await service.patchCartItems(BUYER_ID, dto);
+
+      expect(repo.deleteCartItem).toHaveBeenCalledWith(CART_ITEM_ID);
+      expect(Array.isArray(result)).toBe(true);
+      expect((result as CartItemDto[]).length).toBe(0);
     });
+  });
 
-    // --- 3. GET /api/cart/:cartItemId (단건 조회) 테스트 ---
-    describe('장바구니 아이템 단건 조회 (getCartItem)', () => {
-        test('유효한 아이템 ID로 상세 정보를 DTO로 반환하고 처리 시간 확인', async () => {
-            // Setup: Repository가 상세 정보 (Payload)를 반환
-            mockCartRepository.findCartItemDetail.mockResolvedValue(mockCartItemPrismaPayload as any);
-            mockCartRepository.toCartItemDto.mockReturnValue({ id: CART_ITEM_ID, quantity: 5 } as any);
+  // --- DELETE ---
+  describe('removeCartItem', () => {
+    it('삭제 후 카트 수량 재계산', async () => {
+      repo.findCartItemDetail.mockResolvedValue(row);
 
-            const startTime = process.hrtime.bigint();
-            const result = await cartService.getCartItem(BUYER_ID, CART_ITEM_ID);
-            const endTime = process.hrtime.bigint();
-            const elapsedTimeMs = Number(endTime - startTime) / 1_000_000;
+      await service.removeCartItem(BUYER_ID, CART_ITEM_ID);
 
-            expect(mockCartRepository.findCartItemDetail).toHaveBeenCalledWith(CART_ITEM_ID, BUYER_ID);
-            expect(result.id).toBe(CART_ITEM_ID);
-            expect(result.cart.id).toBe(CART_ID);
-        });
-
-        test('Repository에서 NotFoundError 발생 시, 에러가 전파되는지 확인', async () => {
-            mockCartRepository.findCartItemDetail.mockRejectedValue(new NotFoundError('Item not found'));
-
-            await expect(cartService.getCartItem(BUYER_ID, 'invalid-id')).rejects.toThrow(NotFoundError);
-        });
+      expect(repo.findCartItemDetail).toHaveBeenCalledWith(CART_ITEM_ID, BUYER_ID);
+      expect(repo.deleteCartItem).toHaveBeenCalledWith(CART_ITEM_ID);
+      expect(repo.recalcCartQuantity).toHaveBeenCalledWith(CART_ID);
     });
-
-    // --- 4. PATCH /api/cart (수정/다중 삭제) 테스트 ---
-    describe('장바구니 아이템 수정/삭제 (patchCartItems)', () => {
-        const patchDto = { productId: PRODUCT_ID, sizes: [{ sizeId: SIZE_ID, quantity: 10 }] };
-        const existingItem = { id: CART_ITEM_ID, quantity: 5, cartId: CART_ID, productId: PRODUCT_ID, sizeId: SIZE_ID, createdAt: NOW, updatedAt: NOW };
-
-        test('기존 아이템 수량 수정 후 DTO 목록 반환 및 처리 시간 확인', async () => {
-            // Setup
-            mockCartRepository.findCartItem.mockResolvedValue(existingItem);
-            mockCartRepository.updateCartItem.mockResolvedValue({} as any);
-            mockCartRepository.findAllCartItems.mockResolvedValue([mockCartItemPrismaPayload] as any);
-            mockCartRepository.toCartItemDto.mockReturnValue({ id: CART_ITEM_ID, quantity: 10 } as any);
-
-            const startTime = process.hrtime.bigint();
-            const result = await cartService.patchCartItems(BUYER_ID, patchDto);
-            const endTime = process.hrtime.bigint();
-            const elapsedTimeMs = Number(endTime - startTime) / 1_000_000;
-
-            expect(mockCartRepository.updateCartItem).toHaveBeenCalledWith(CART_ITEM_ID, 10);
-            expect(mockCartRepository.deleteCartItem).not.toHaveBeenCalled();
-            expect(result).toHaveLength(1);
-        });
-
-        test('수량 0으로 설정 시 아이템 삭제 후 처리 시간 확인', async () => {
-            // Setup
-            const deleteDto = { productId: PRODUCT_ID, sizes: [{ sizeId: SIZE_ID, quantity: 0 }] };
-            mockCartRepository.findCartItem.mockResolvedValue(existingItem);
-            mockCartRepository.deleteCartItem.mockResolvedValue(undefined);
-            mockCartRepository.findAllCartItems.mockResolvedValue([]);
-            
-            const startTime = process.hrtime.bigint();
-            const result = await cartService.patchCartItems(BUYER_ID, deleteDto);
-            const endTime = process.hrtime.bigint();
-            const elapsedTimeMs = Number(endTime - startTime) / 1_000_000;
-
-            expect(mockCartRepository.deleteCartItem).toHaveBeenCalledWith(CART_ITEM_ID);
-            expect(mockCartRepository.updateCartItem).not.toHaveBeenCalled();
-            expect(result).toHaveLength(0);
-        });
-    });
-
-    // --- 5. DELETE /api/cart/:cartItemId (단건 삭제) 테스트 ---
-    describe('장바구니 아이템 단건 삭제 (removeCartItem)', () => {
-        test('아이템 삭제 후 수량 재계산까지의 처리 시간 확인', async () => {
-            // Setup
-            mockCartRepository.findCartItemDetail.mockResolvedValue(mockCartItemPrismaPayload as any);
-            mockCartRepository.deleteCartItem.mockResolvedValue(undefined);
-
-            const startTime = process.hrtime.bigint();
-            await cartService.removeCartItem(BUYER_ID, CART_ITEM_ID);
-            const endTime = process.hrtime.bigint();
-            const elapsedTimeMs = Number(endTime - startTime) / 1_000_000;
-
-            expect(mockCartRepository.findCartItemDetail).toHaveBeenCalledWith(CART_ITEM_ID, BUYER_ID);
-            expect(mockCartRepository.deleteCartItem).toHaveBeenCalledWith(CART_ITEM_ID);
-            expect(mockCartRepository.recalcCartQuantity).toHaveBeenCalledWith(CART_ID);
-        });
-    });
+  });
 });

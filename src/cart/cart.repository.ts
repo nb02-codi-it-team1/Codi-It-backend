@@ -1,5 +1,3 @@
-// ./src/cart/cart.repository.ts
-
 import { PrismaClient, Prisma, Cart } from '@prisma/client';
 import { NotFoundError } from '../common/errors/error-type';
 import { CartItemDto } from './dtos/cart-item.dto';
@@ -29,6 +27,10 @@ export default class CartRepository {
 
   public toCartItemDto(it: CartItemPrismaPayload): CartItemDto {
     const p = it.product;
+    if (!p || !p.store) {
+      // Product, Store, Stock 중 하나라도 누락되면 유효하지 않은 데이터로 간주
+      throw new NotFoundError('장바구니 아이템에 연결된 상품 정보를 찾을 수 없습니다.');
+    }
     const store = p.store;
 
     return {
@@ -57,7 +59,6 @@ export default class CartRepository {
 
         // StoreInCartDto 필드 매핑
         store: {
-          // 💡 오류 1 해결: StoreInCartDto에 없는 'userId', 'address' 등은 제외
           id: store.id,
           name: store.name,
         },
@@ -66,11 +67,9 @@ export default class CartRepository {
         stocks: p.Stock.map((st) => ({
           id: st.id,
           quantity: st.quantity,
-          // 💡 오류 2 해결: size 객체의 형식 불일치 수정
           size: {
-            id: st.sizeId, // Stock의 sizeId를 사용하거나,
-            name: st.size.ko, // size 엔티티의 이름(ko/en 중 하나)을 사용
-            // name: st.size.name, // Size 엔티티에 name 필드가 있다면 이것 사용
+            id: st.sizeId,
+            name: st.size.ko,
           },
         })),
       },
