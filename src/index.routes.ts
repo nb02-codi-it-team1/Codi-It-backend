@@ -10,6 +10,7 @@ import InquiryRouter from './inquiry/inquiry.route';
 import DashboardRouter from './dashboard/dashboard.routes';
 import { NotificationRepository } from './notification/notification.repository';
 import { NotificationService } from './notification/notification.service';
+import { buildCartRouter } from './cart/cart.routes';
 
 const router = express.Router();
 
@@ -23,5 +24,6 @@ router.use('/inquiries', InquiryRouter(prisma, sharedNotificationService));
 router.use('/stores', StoresRouter(prisma));
 router.use('/notifications', NotificationRouter(prisma, sharedNotificationService));
 router.use('/dashboard', DashboardRouter(prisma));
+router.use('/cart', buildCartRouter());
 
 export default router;
