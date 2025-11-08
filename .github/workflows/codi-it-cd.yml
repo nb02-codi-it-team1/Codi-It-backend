@@ -35,12 +35,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          source: |
-            dist/*
-            package*.json
-            ecosystem.config.js
-            prisma
-            nginx
+          source: '.'
           target: '/home/ec2-user/codi-it'
 
       # env설정 및 서버 설정 및 재시작
