@@ -35,6 +35,7 @@ model User {
   Inquiry      Inquiry[]
   InquiryReply InquiryReply[]
   Notification Notification[]
+  orders Order[]
 }
 
 enum UserType {
@@ -144,6 +145,7 @@ model CartItem {
 
 model Order {
   id            String   @id @default(cuid())
+  buyerId       String
   name          String
   phoneNumber   String
   address       String
@@ -155,6 +157,7 @@ model Order {
 
   payment   Payment?
   OrderItem OrderItem[]
+  buyer           User      @relation(fields: [buyerId], references: [id])
 }
 
 model OrderItem {
